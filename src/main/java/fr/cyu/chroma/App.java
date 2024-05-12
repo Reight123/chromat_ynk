@@ -20,9 +20,9 @@ import java.util.List;
 
 public class App extends Application {
 
-    private List<ChoiceBox<String>> choiceBoxes = new ArrayList<>();
-    private List<TextField> valueFields = new ArrayList<>();
-    private List<String> choices = List.of("FWD", "BWD", "TURN", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL");
+    private final List<ChoiceBox<String>> choiceBoxes = new ArrayList<>();
+    private final List<TextField> valueFields = new ArrayList<>();
+    private final List<String> choices = List.of("FWD", "BWD", "TURN", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBoucle");
 
     @Override
     public void start(Stage primaryStage) {
@@ -33,6 +33,7 @@ public class App extends Application {
         vbox.setSpacing(5);
 
         addBlock(vbox);
+        addButtons(vbox);
 
         Scene scene = new Scene(vbox, 400, 300);
         primaryStage.setScene(scene);
@@ -48,16 +49,36 @@ public class App extends Application {
         valueFields.add(valueField);
 
         updateDisplay(vbox);
+    }
+
+    private void suprBlock(VBox vbox) {
+        if (choiceBoxes.size() > 1) {
+            choiceBoxes.remove(choiceBoxes.size() - 1);
+            valueFields.remove(valueFields.size() - 1);
+
+            updateDisplay(vbox);
+
+            addButtons(vbox);
+        }
+    }
+
+    private void addButtons(VBox vbox) {
+        vbox.getChildren().removeIf(node -> node instanceof Button);
 
         Button addButton = new Button("+");
         addButton.setOnAction(event -> addBlock(vbox));
+        Button suprButton = new Button("-");
+        suprButton.setOnAction(event -> suprBlock(vbox));
         Button writeButton = new Button("Write Selected Blocks to File");
         writeButton.setOnAction(event -> writeCommand());
-        vbox.getChildren().addAll(addButton, writeButton);
+
+        vbox.getChildren().addAll(addButton, suprButton, writeButton);
+
+        updateDisplay(vbox);
     }
 
     private void updateDisplay(VBox vbox) {
-        vbox.getChildren().clear(); // Effacer les éléments actuels
+        vbox.getChildren().removeIf(node -> node instanceof HBox);
 
         for (int i = 0; i < choiceBoxes.size(); i++) {
             HBox hbox = new HBox(10);
@@ -68,15 +89,22 @@ public class App extends Application {
 
     private void writeCommand() {
         try {
-            File file = new File("CYcode.txt");
+            File file = new File("UserCode.txt");
             FileWriter fileWriter = new FileWriter(file);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             for (int i = 0; i < choiceBoxes.size(); i++) {
                 String selectedOption = choiceBoxes.get(i).getValue();
                 String enteredValue = valueFields.get(i).getText();
-                if (selectedOption != null && !enteredValue.isEmpty()) {
-                    bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
+                if (selectedOption != null) {
+                    if (selectedOption.equals("FOR") || selectedOption.equals("IF") || selectedOption.equals("WHILE") ) {
+                        bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
+                        bufferedWriter.write("{\n");
+                    } else if (selectedOption.equals("FinBoucle")) {
+                        bufferedWriter.write("}\n");
+                    } else if (!enteredValue.isEmpty()) {
+                        bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
+                    }
                 }
             }
 

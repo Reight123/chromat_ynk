@@ -6,7 +6,7 @@ public class Cursor {
     private int pos_y= 0;
     private int direction=0;
     private boolean is_shown= false;
-    private int opacity=50;
+    private int opacity=100;
     private int thick=5;
 
     public Cursor(int id) {

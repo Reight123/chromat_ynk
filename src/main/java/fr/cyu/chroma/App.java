@@ -1,29 +1,146 @@
 package fr.cyu.chroma;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-/**
- * JavaFX App
- */
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class App extends Application {
 
-    @Override
-    public void start(Stage stage) {
-        var javaVersion = SystemInfo.javaVersion();
-        var javafxVersion = SystemInfo.javafxVersion();
+    private final ObservableList<ChoiceBox<String>> choiceBoxes = FXCollections.observableArrayList();
+    private final ObservableList<TextField> valueFields = FXCollections.observableArrayList();
+    private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURN", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock");
 
-        var label = new Label("Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".");
-        var scene = new Scene(new StackPane(label), 640, 480);
-        stage.setScene(scene);
-        stage.show();
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Menu");
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+        VBox vbox = new VBox();
+        vbox.setPadding(new Insets(40));
+        vbox.setSpacing(10);
+
+        Scene scene = new Scene(vbox, screenBounds.getWidth(), screenBounds.getHeight());
+
+        addButtons(vbox);
+        addBlock(vbox);
+
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void addBlock(VBox vbox) {
+        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.setItems(choices);
+        choiceBoxes.add(choiceBox);
+
+        TextField valueField = new TextField();
+        valueFields.add(valueField);
+
+        HBox hbox = new HBox(10);
+        hbox.getChildren().addAll(choiceBox, new Label("Valeur:"), valueField);
+        vbox.getChildren().add(hbox);
+    }
+
+    private void suprBlock(VBox vbox) {
+        if (choiceBoxes.size() > 1) {
+            choiceBoxes.remove(choiceBoxes.size() - 1);
+            valueFields.remove(valueFields.size() - 1);
+
+            vbox.getChildren().remove(vbox.getChildren().size() - 1);
+        }
+    }
+
+    private void addButtons(VBox vbox) {
+        Button addButton = new Button("+");
+        addButton.setOnAction(event -> addBlock(vbox));
+        Button suprButton = new Button("-");
+        suprButton.setOnAction(event -> suprBlock(vbox));
+        Button writeButton = new Button("Enregistrer dans un fichier");
+        writeButton.setOnAction(event -> writeCommand());
+        Button selectFileButton = new Button("Sélectionner un fichier à exécuter");
+        selectFileButton.setOnAction(event -> selectFile());
+
+        vbox.getChildren().addAll(addButton, suprButton, writeButton, selectFileButton);
+    }
+
+    private void writeCommand() {
+        try {
+            Stage stage = new Stage();
+            stage.setTitle("Nom du fichier");
+            VBox vbox = new VBox();
+            vbox.setPadding(new Insets(10));
+            vbox.setSpacing(5);
+            TextField fileNameField = new TextField();
+            fileNameField.setPromptText("Entrez le nom du fichier");
+            Button confirmButton = new Button("Confirmer");
+            confirmButton.setOnAction(event -> {
+                String fileName = fileNameField.getText();
+                if (!fileName.isEmpty()) {
+                    saveToFile(fileName);
+                    stage.close();
+                }
+            });
+            vbox.getChildren().addAll(fileNameField, confirmButton);
+            Scene scene = new Scene(vbox, 400, 125);
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            System.out.println("Error saving file name: " + e.getMessage());
+        }
+    }
+
+    private void saveToFile(String fileName) {
+        try {
+            File file = new File(fileName + ".txt");
+            FileWriter fileWriter = new FileWriter(file);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            for (int i = 0; i < choiceBoxes.size(); i++) {
+                String selectedOption = choiceBoxes.get(i).getValue();
+                String enteredValue = valueFields.get(i).getText();
+                if (selectedOption != null) {
+                    if (selectedOption.equals("FOR") || selectedOption.equals("IF") || selectedOption.equals("WHILE") || selectedOption.equals("MIMIC") || selectedOption.equals("MIRROR")) {
+                        bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
+                        bufferedWriter.write("{\n");
+                    } else if (selectedOption.equals("FinBlock")) {
+                        bufferedWriter.write("}\n");
+                    } else if (!enteredValue.isEmpty()) {
+                        bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
+                    }
+                }
+            }
+
+            bufferedWriter.close();
+            System.out.println("Commands written to file successfully.");
+        } catch (IOException e) {
+            System.out.println("Error writing commands to file: " + e.getMessage());
+        }
+    }
+
+    private void selectFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Sélectionner un fichier");
+        File selectedFile = fileChooser.showOpenDialog(null);
+        if (selectedFile != null) {
+            // Interpréteur.méthode(selectedFile);
+        }
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
-
 }

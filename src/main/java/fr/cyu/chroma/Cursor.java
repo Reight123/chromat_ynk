@@ -2,21 +2,15 @@ package fr.cyu.chroma;
 
 public class Cursor {
     private final int id;
-    private int pos_x;
-    private int pos_y;
-    private int direction;
-    private boolean is_shown;
-    private int opacity;
-    private int thick;
+    private int pos_x= 0;
+    private int pos_y= 0;
+    private int direction=0;
+    private boolean is_shown= false;
+    private int opacity=100;
+    private int thick=5;
 
-    public Cursor(int id, int pos_x, int pos_y, int direction, boolean is_shown, int opacity, int thick) {
+    public Cursor(int id) {
         this.id = id;
-        this.pos_x = pos_x;
-        this.pos_y = pos_y;
-        this.direction = direction;
-        this.is_shown = is_shown;
-        this.opacity = opacity;
-        this.thick = thick;
     }
 
     public int getId() {

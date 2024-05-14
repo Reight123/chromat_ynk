@@ -8,8 +8,7 @@ import java.util.regex.Pattern;
 
 public class Interpreter {
 
-	private int windowWidth;                                                // window information needed to convert %age
-	private int windowHeight;
+	private int maxWindowWidth;                                                // window information needed to convert %age
 
 	private final Map<String, String[]> keywords = new HashMap<>() {{		// create a map, with a regex expression to find keywords and isolate what is before and after, and the associated template
 		put("CURSOR\\s+", new String[]{"Cursor", "= new Cursor();"});		// separate the template in several parts, to put the inputs afterward
@@ -27,12 +26,15 @@ public class Interpreter {
 		put("COLOR\\s+", new String[]{"currentCursor.setColor(", ");"});
 		put("LOOKAT\\s+", new String[]{"currentCursor.setOrientation(",");"});
 		put("NUM\\s+", new String[]{"double ",";"});
+		put("INT\\s+", new String[]{"int ",";"});
 		put("STR\\s+", new String[]{"String ",";"});
 		put("BOOL\\s+", new String[]{"boolean ",";"});
 		put("DEL\\s+", new String[]{""," = null;"});
 		put("IF\\s+", new String[]{"if(", "){"});
 		put("WHILE\\s+", new String[]{"while(", "){"});
-		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{});
+		put("MIMIC\\s+", new String[]{"mimic(", "){ // temporary "});
+		put("MIRROR\\s+", new String[]{"mirror(", "){ // temporary "});
+		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{}); // the FOR is peculiar and is handled separately, thus the empty String
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)", new String[]{});
@@ -42,8 +44,7 @@ public class Interpreter {
 
 
 	public Interpreter(int windowWidth, int windowHeight) {
-		this.windowWidth = windowWidth;
-		this.windowHeight = windowHeight;
+		this.maxWindowWidth = Math.max(windowHeight, windowWidth);
 	}
 
 	/**
@@ -53,8 +54,7 @@ public class Interpreter {
 	 * @param windowHeight height of the window containing the drawing
 	 */
 	public void setSize(int windowWidth, int windowHeight) {
-		this.windowWidth = windowWidth;
-		this.windowHeight = windowHeight;
+		this.maxWindowWidth = Math.max(windowHeight, windowWidth);
 	}
 
 
@@ -67,8 +67,8 @@ public class Interpreter {
 	public String decode(String cyCode) {
 		String indentation = "\t\t";
 		String javaCode = indentation + " Cursor currentCursor;";			// currentCursor must be declared because the user won't do it
-		cyCode = cyCode.replaceAll("\\{", "");				// remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
-		cyCode = cyCode.replaceAll("\\}", " }\n");			// skip line after } to prevent have code on the same line after a }
+		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
+		cyCode = cyCode.replaceAll("\\}", " }\n");		    	    // skip line after } to prevent have code on the same line after a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));		// separate in a list of lines
 
 		for (String cyLine : cyLines) {
@@ -150,7 +150,7 @@ public class Interpreter {
 				if (patternFound){
 					newJavaLine = newJavaLine + "\n" + indentation + " }";
 				}else{
-					newJavaLine = indentation + " " + newCyLine;						//  if the line contains a } and no pattern, just copy it, and do not add a ;
+					newJavaLine = indentation + " " + newCyLine;            //  if the line contains a } and no pattern, just copy it, and do not add a ;
 				}
 			}else{
 				if(!patternFound && !newCyLine.matches("[ \t]*")){	// if no pattern are found and the line contains other things that space or tabulation
@@ -165,23 +165,6 @@ public class Interpreter {
 	}
 
 
-
-
-	/**
-	 *  This function return the absolute equivalent of the parameter in %age, depending on the set window size
-	 *
-	 * @param percentage value in %age
-	 * @return absolute value of percentage
-	 */
-	private int getValue(int percentage){
-		int fullSize = Math.max(this.windowHeight, this.windowWidth);                   // convert a percentage into its value depending on the window size
-		return (fullSize/100) * percentage;
-	}
-
-
-
-
-
 	/**
 	 *  This function converts content of a given input
 	 *
@@ -193,7 +176,10 @@ public class Interpreter {
 	private String convert(String function, int i, String input){
 
 		if (i == 1 && !input.contains("=")){
-			if (function.contains("NUM")){                                    // if a float wasn't initialized, put it to 0
+			if (function.contains("NUM")){                                    // if a double wasn't initialized, put it to 0
+				input = input + " = 0";
+			}
+			if (function.contains("INT")){                                    // if a int wasn't initialized, put it to 0
 				input = input + " = 0";
 			}
 			if (function.contains("STR")){                                    // if a String wasn't initialized, put it to ""
@@ -206,30 +192,31 @@ public class Interpreter {
 
 		if (input.contains("%")){                                           // to convert the percentage in absolute value
 			if (!function.contains("PRESS")){
-				String pattern = "(\\d+)\\s*%";                             // make a pattern of a number with a %
+				String pattern = "(\\w+\\.?\\d*)\\s*%";                     // make a pattern of a number (int double or variableName) with a %
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input);                     // look for the pattern in the string
 
 				while (matcher.find()) {
-					String stringNbr = matcher.group(1);
-					int result = getValue(Integer.parseInt(stringNbr));     // convert the String in number and get its corresponding value depending on window  size
-					input = matcher.replaceFirst(String.valueOf(result));   // replace it in the string
+					String[] str = input.split(matcher.group(0), 2);    // split the string just for the first occurrence
+					if (str.length == 2){
+						input = str[0] + "(int) (" + matcher.group(1) + "*(" + this.maxWindowWidth + "/100))" + str[1];
+					} else {                                                 // if the input is the matcher.group(0)
+						input = "(int) (" + matcher.group(1) + "*(" + this.maxWindowWidth + "/100))";
+					}
 					matcher = regex.matcher(input);                         // look fot another
 				}
 			}else {                                                         // if the command is PRESS, then the percentage does not depend on the window size
-				String pattern = "(\\d+)\\s*%";
+				String pattern = "(\\w+\\.?\\d*)\\s*%";
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input);
 
 				if (matcher.find()) {
-					String stringNbr = matcher.group(1);
-					float result = (float)Integer.parseInt(stringNbr)/100;  // convert the String in number
-					input = matcher.replaceFirst(String.valueOf(result));   // replace it in the string
+					input = input.replaceAll(matcher.group(0), "(double) (" + matcher.group(1) + "/100)");   // replace it in the string
 				}
 			}
 		}
 
-		if (input.contains("#") && function.contains("COLOR")) {             // if the color command have a hexadecimal parameter, convert it to rgb
+		if (input.contains("#") && function.contains("COLOR")) {             // if the color command have a hexadecimal parameter, put it as a String
 			input = "\"" + input + "\"";
 		}
 

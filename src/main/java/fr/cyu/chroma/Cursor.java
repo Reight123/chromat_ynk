@@ -1,6 +1,7 @@
 package fr.cyu.chroma;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 public class Cursor   {
     private final int id;
@@ -11,10 +12,12 @@ public class Cursor   {
     private int opacity=100;
     private int thick=5;
 
+    private Color[] colors= {Color.BLUE,Color.RED,Color.GREEN};
+
     public Cursor(int id) {
         this.id = id;
-        this.pos_x = 10;
-        this.pos_y = 10;
+        this.pos_x = 0;
+        this.pos_y = 0;
     }
 
     public int getId() {
@@ -69,5 +72,9 @@ public class Cursor   {
 
     public  String toString(){
         return getId() + "(" + getPos_x() + "," + getPos_y() + ")";
+    }
+
+    public Color setColor(int c){
+        return colors[c];
     }
 }

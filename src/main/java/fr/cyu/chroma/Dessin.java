@@ -7,6 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 import java.io.File;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class Dessin extends Canvas {
@@ -76,7 +77,7 @@ public class Dessin extends Canvas {
                         System.out.println("Direction non définie");
                         break;
                 }
-                gc.setStroke(Color.BLUE);
+               // gc.setStroke(Color.BLUE);
                 gc.setLineWidth(2);
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
 
@@ -128,7 +129,7 @@ public class Dessin extends Canvas {
 
             @Override
             public void handle(long l2) {
-                gc.setStroke(Color.GREEN);
+               // gc.setStroke(Color.GREEN);
                 gc.setLineWidth(3);
                 switch (direction){
                     case 1:
@@ -181,6 +182,16 @@ public class Dessin extends Canvas {
             default:
                 System.out.println("Direction non défini");
         }
+    }
+
+    public void addCouleur(){
+        int c;
+        System.out.println("1) Bleu, 2) Rouge  3) Vert");
+        Scanner lectureClavier = new Scanner(System.in);
+        System.out.println("Entrer une couleur: ");
+        c = lectureClavier.nextInt();
+        Color color = cursor.setColor(c);
+        gc.setStroke(color);
     }
     public int getOnAction(){
         return this.onAction;

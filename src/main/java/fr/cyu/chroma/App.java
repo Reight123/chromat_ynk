@@ -55,8 +55,11 @@ public class App extends Application {
         forwardButton.setOnAction(e -> instruction(gc,1,dessin));
         Button backwardButton = new Button("Backward");
         backwardButton.setOnAction(e -> instruction(gc,2,dessin));
+        Button colorButton = new Button("Color");
+        colorButton.setOnAction(e -> instruction(gc,3,dessin));
         vbox.getChildren().add(forwardButton);
         vbox.getChildren().add(backwardButton);
+        vbox.getChildren().add(colorButton);
 
         Scene scene = new Scene(vbox, screenBounds.getWidth(), screenBounds.getHeight());
 
@@ -76,7 +79,8 @@ public class App extends Application {
             case 2:
                 dessin.backward();
                 break;
-
+            case 3:
+                dessin.addCouleur();
         }
     }
     private void draw(GraphicsContext gc) {

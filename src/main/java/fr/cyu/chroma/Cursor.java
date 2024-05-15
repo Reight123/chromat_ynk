@@ -1,6 +1,8 @@
 package fr.cyu.chroma;
 
-public class Cursor {
+import javafx.scene.canvas.GraphicsContext;
+
+public class Cursor   {
     private final int id;
     private int pos_x= 0;
     private int pos_y= 0;
@@ -11,18 +13,18 @@ public class Cursor {
 
     public Cursor(int id) {
         this.id = id;
+        this.pos_x = 10;
+        this.pos_y = 10;
     }
 
     public int getId() {
         return id;
     }
 
-    public int getPos_x() {
-        return pos_x;
-    }
+    public int getPos_x() { return  this.pos_x; }
 
     public int getPos_y() {
-        return pos_y;
+        return this.pos_y;
     }
 
     public int getDirection() {
@@ -33,7 +35,7 @@ public class Cursor {
         return is_shown;
     }
 
-    public int getOpacity() {
+    public int getCursorOpacity() {
         return opacity;
     }
 
@@ -63,5 +65,9 @@ public class Cursor {
 
     public void setThick(int thick) {
         this.thick = thick;
+    }
+
+    public  String toString(){
+        return getId() + "(" + getPos_x() + "," + getPos_y() + ")";
     }
 }

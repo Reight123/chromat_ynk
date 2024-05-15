@@ -66,7 +66,7 @@ public class Interpreter {
 	 */
 	public String decode(String cyCode) {
 		String indentation = "\t\t";
-		String javaCode = indentation + " Cursor currentCursor;";			// currentCursor must be declared because the user won't do it
+		String javaCode = " Cursor currentCursor;";			// currentCursor must be declared because the user won't do it
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
 		cyCode = cyCode.replaceAll("\\}", " }\n");		    	    // skip line after } to prevent have code on the same line after a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));		// separate in a list of lines

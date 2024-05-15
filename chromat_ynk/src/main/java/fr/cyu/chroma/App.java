@@ -109,7 +109,7 @@ public class App extends Application {
 
     private void saveToFile(String fileName) {
         try {
-            File file = new File(fileName + ".txt");
+            File file = new File("./storage/" + fileName + ".txt");
             FileWriter fileWriter = new FileWriter(file);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
@@ -138,24 +138,33 @@ public class App extends Application {
     private void executeFile(){
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Sélectionner un fichier");
+        String directory = "storage/";
+        File repertoireInitial = new File(directory);
+        fileChooser.setInitialDirectory(repertoireInitial);
         File selectedFile = fileChooser.showOpenDialog(null);
 
         String fileContent = getFileContent(selectedFile);
         String javaCode = "";
+
         if(!fileContent.isEmpty()){
+
             try {
                 Interpreter interpreter = new Interpreter(this.drawingWindowWidth, this.drawingWindowHeight);
                 javaCode = interpreter.decode(fileContent);
-                String fileStart = "package fr.cyu.chroma;\n\npublic class Main {\n\tpublic static void main(String[] args) {\n\n";
-                javaCode = fileStart + javaCode + "\n\t}\n}";
-                writeJavaFile(javaCode);
+                File templateFile = new File("../plotter/templateMain.java");
+                String temp = getFileContent(templateFile);
+                String[] template = temp.split("//insert // do not delete");
+
+                if (template.length == 2 && !temp.isEmpty()) {
+                    javaCode = template[0] + javaCode + template[1];
+                    writeJavaFile(javaCode);
+                }
             } catch (Exception e){
                 System.out.println("Error while compiling commands to java: " + e.getMessage());
             }
 
             if(!javaCode.isEmpty()){
-               compile();
-               run();
+                run();
             }else{
                 // TODO tell user that operation failed
             }
@@ -188,8 +197,8 @@ public class App extends Application {
     }
 
 
-    private static void writeJavaFile(String fileContent){
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("srcPlotter/main/java/fr/cyu/chroma/Main.java"))) {
+    private void writeJavaFile(String fileContent){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("../plotter/src/main/java/fr/cyu/chroma/Main.java"))) {
             writer.write(fileContent);
         } catch (IOException e) {
             e.printStackTrace();
@@ -197,37 +206,15 @@ public class App extends Application {
     }
 
 
-    private static void compile(){
+
+    private void run(){
         try{
+            String pathPlotter = "../plotter/pom.xml";
             if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                String path1 = "target/classes/fr/cyu/chroma";
-                String path2 = "srcPlotter/main/java/fr/cyu/chroma/*.java";
-                new ProcessBuilder("cmd.exe", "/c", "javac", "-d", path1, path2).start();
+                new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run").start();
             }
             if (System.getProperty("os.name").toLowerCase().contains("linux")) {
-                String path1 = "target/classes/fr/cyu/chroma";
-                String path2 = "srcPlotter/main/java/fr/cyu/chroma/*.java";
-                new ProcessBuilder("bash", "-c", "javac", "-d", path1, path2).start();
-            }
-
-        }catch (Exception e){
-            System.out.println("Error while compiling file: " + e.getMessage());
-        }
-    }
-
-    private static void run(){
-        try{
-            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                String path1 = "target/classes/fr/cyu/chroma";
-                new ProcessBuilder("cmd.exe", "/c", "java", "-cp", path1, "Main").start();
-            }
-            if (System.getProperty("os.name").toLowerCase().contains("linux")) {
-                String path1 = "target/classes/fr/cyu/chroma";
-                new ProcessBuilder("echo", "Main").start();
-                new ProcessBuilder("java", "-cp", "target/classes/fr/cyu/chroma", "Main").start();
-                //Process process = Runtime.getRuntime().exec("java -cp target/classes/fr/cyu/chroma Main");
-                //process.waitFor();
-                //System.out.println("Le programme a terminé avec le code : " + process.exitValue());
+                new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run").start();
             }
 
         }catch (Exception e){
@@ -236,8 +223,6 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        //launch(args);
-        compile();
-        run();
+        launch(args);
     }
 }

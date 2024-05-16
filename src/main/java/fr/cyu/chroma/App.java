@@ -35,14 +35,16 @@ public class App extends Application {
         primaryStage.setTitle("Menu");
         Rectangle2D
                 screenBounds = Screen.getPrimary().getVisualBounds();
-        Canvas canvas = new Canvas(300, 250);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        //Canvas canvas = new Canvas(300, 250);
+        //GraphicsContext gc = canvas.getGraphicsContext2D();
 
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
-        vbox.getChildren().add(canvas);
+        //vbox.getChildren().add(canvas);
 
+
+        /*
         Pointer pointer = new Pointer(gc);
         Button forwardButton = new Button("Forward");
         forwardButton.setOnAction(e -> instruction(gc,1, pointer));
@@ -53,6 +55,7 @@ public class App extends Application {
         vbox.getChildren().add(forwardButton);
         vbox.getChildren().add(backwardButton);
         vbox.getChildren().add(colorButton);
+        */
 
         Scene scene = new Scene(vbox, screenBounds.getWidth(), screenBounds.getHeight());
         scene.getStylesheets().add(("/style.css"));
@@ -61,10 +64,35 @@ public class App extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.getStyleClass().add("choice");
+        choiceBox.setItems(choices);
+        choiceBoxes.add(choiceBox);
+
+        TextField valueField = new TextField();
+        valueField.getStyleClass().add("value");
+        valueFields.add(valueField);
+
+        Button addButton = new Button("+");
+        addButton.getStyleClass().add("buttonmodif");
+        addButton.setOnAction(event -> addNewBlockAfter(vbox, choiceBox));
+
+        Button deleteButton = new Button("-");
+        deleteButton.getStyleClass().add("buttonmodif");
+        deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
+
+        HBox hbox = new HBox(10);
+        hbox.getStyleClass().add("block-container");
+        hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
+        vbox.getChildren().add(hbox);
+
+        addButtons.add(addButton);
+        deleteButtons.add(deleteButton);
     }
 
 
-   private void instruction(GraphicsContext gc, int methode, Pointer pointer){
+    private void instruction(GraphicsContext gc, int methode, Pointer pointer){
         switch (methode){
             case 1:
                 System.out.println(pointer);

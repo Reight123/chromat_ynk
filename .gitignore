@@ -1,4 +1,12 @@
-target/*
+chromat_ynk/storage/*
+chromat_ynk/target/*
+chromat_ynk/.idea/*
+chromat_ynk/out/*
+chromat_ynk/*iml
+plotter/target/*
+plotter/.idea/*
+plotter/out/*
+plotter/*iml
 .idea/*
-*.iml
 out/*
+*.iml

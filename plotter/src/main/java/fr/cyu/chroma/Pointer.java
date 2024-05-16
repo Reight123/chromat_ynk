@@ -8,10 +8,10 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class Pointer {
-    private double pos_x = 10;
-    private double pos_y = 23;
-    private int direction = 30;
-    private boolean is_shown = false;
+    private double pos_x = 400;
+    private double pos_y = 400;
+    private int direction = 90;
+    private boolean is_shown = true;
     private int opacity = 100;
     private int thick = 5;
 
@@ -70,7 +70,7 @@ public class Pointer {
         this.opacity = opacity;
     }
 
-    public void setThick(int thick) {
+    public void setThickness(int thick) {
         this.thick = thick;
     }
 
@@ -78,12 +78,10 @@ public class Pointer {
         return  "1 (" + getPos_x() + "," + getPos_y() + ")";
     }
 
-    public Color setColor(int c) {
-        return colors[c];
-    }
+    //public Color setColor(int c) {return colors[c];}
 
 
-    public void forward(int value) {
+    public void fwd(int value) {
 
         System.out.println("Demarrage");
         //this.gc.setStroke(Color.BLUE);
@@ -121,18 +119,18 @@ public class Pointer {
 
                 if (count >= Math.abs(value)) {
                     stop();
-                    System.out.println("Forward fini");
+                    //System.out.println("Forward fini");
 
                 }
             }
         };
         timer.start();
-            pos_x+=value*Math.cos(direction*Math.PI/180);
-            pos_y+=value*Math.sin(direction*Math.PI/180);
+        pos_x+=value*Math.cos(direction*Math.PI/180);
+        pos_y+=value*Math.sin(direction*Math.PI/180);
 
     }
-    public void backward(int value){
-        forward(-1*value);
+    public void bwd(int value){
+        fwd(-1*value);
     }
 
     public void turnRight(int i){
@@ -143,12 +141,26 @@ public class Pointer {
         direction+=i;
     }
 
-    public void position(double x, double y){
+    public void pos(double x, double y){
         pos_x=x;
         pos_y=y;
     }
 
-    public void addCouleur(){
+    public void mov(double x, double y){}
+
+    public void hide(){}
+
+    public void show(){}
+
+    public void setColor(int red, int green, int blue){}
+
+    public void setColor(String hexadecimal){}
+
+    public void lookat(Pointer pointer){}
+
+    public void lookat(double x, double y){}
+
+    /*public void addCouleur(){
         int c;
         System.out.println("0) Bleu, 1) Rouge  2) Vert");
         Scanner lectureClavier = new Scanner(System.in);
@@ -156,6 +168,6 @@ public class Pointer {
         c = lectureClavier.nextInt();
         Color color = setColor(c);
         gc.setStroke(color);
-    }
+    }*/
 
 }

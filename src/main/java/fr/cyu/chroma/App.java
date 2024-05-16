@@ -72,7 +72,7 @@ public class App extends Application {
 
                 break;
             case 2:
-                pointer.backward(5);
+                pointer.backward(10);
                 break;
             case 3:
                 pointer.addCouleur();
@@ -130,13 +130,14 @@ public class App extends Application {
         hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
         vbox.getChildren().add(index + 1, hbox);
 
+
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
     }
 
     private void deleteBlock(VBox vbox, ChoiceBox<String> choiceBox) {
         if (choiceBoxes.size() > 1) {
-            int index = choiceBoxes.indexOf(choiceBox);
+            int index = choiceBoxes.indexOf(  choiceBox);
             choiceBoxes.remove(index);
             valueFields.remove(index);
             vbox.getChildren().remove(index + 1);

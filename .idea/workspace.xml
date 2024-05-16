@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="19c92daf-6a14-4d44-adc6-6a081eedaf2a" name="Changes" comment="dev: modify cursor class">
+      <change afterPath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/Pointer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/Cursor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/Cursor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/Cursor.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/Dessin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/cyu/chroma/Dessin.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/fr/cyu/chroma/App.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fr/cyu/chroma/App.class" afterDir="false" />
     </list>
@@ -84,7 +85,8 @@
       <workItem from="1715593837343" duration="2943000" />
       <workItem from="1715629071647" duration="354000" />
       <workItem from="1715667625947" duration="19680000" />
-      <workItem from="1715733106547" duration="20260000" />
+      <workItem from="1715733106547" duration="20447000" />
+      <workItem from="1715849791696" duration="6560000" />
     </task>
     <task id="LOCAL-00001" summary="init: Project">
       <created>1715080697316</created>

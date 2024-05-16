@@ -1,9 +1,5 @@
 package fr.cyu.chroma;
 
-import javafx.animation.*;
-import javafx.animation.TranslateTransition;
-import javafx.scene.Cursor;
-import javafx.scene.ImageCursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
@@ -14,22 +10,16 @@ import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 public class App extends Application {
 
@@ -50,13 +40,14 @@ public class App extends Application {
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
         vbox.getChildren().add(canvas);
-        Dessin dessin = new Dessin(gc);
+
+        Pointer pointer = new Pointer(1,gc);
         Button forwardButton = new Button("Forward");
-        forwardButton.setOnAction(e -> instruction(gc,1,dessin));
+        forwardButton.setOnAction(e -> instruction(gc,1, pointer));
         Button backwardButton = new Button("Backward");
-        backwardButton.setOnAction(e -> instruction(gc,2,dessin));
+        backwardButton.setOnAction(e -> instruction(gc,2, pointer));
         Button colorButton = new Button("Color");
-        colorButton.setOnAction(e -> instruction(gc,3,dessin));
+        colorButton.setOnAction(e -> instruction(gc,3, pointer));
         vbox.getChildren().add(forwardButton);
         vbox.getChildren().add(backwardButton);
         vbox.getChildren().add(colorButton);
@@ -68,30 +59,21 @@ public class App extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
-        //draw(gc);
     }
 
-    private void instruction(GraphicsContext gc, int methode,Dessin dessin){
+   private void instruction(GraphicsContext gc, int methode, Pointer pointer){
         switch (methode){
             case 1:
-                dessin.forward();
+                System.out.println(pointer);
+                pointer.forward();
+
                 break;
             case 2:
-                dessin.backward();
+                pointer.backward();
                 break;
             case 3:
-                dessin.addCouleur();
+                pointer.addCouleur();
         }
-    }
-    private void draw(GraphicsContext gc) {
-        Dessin dessin = new Dessin(gc);
-        System.out.println(dessin.getPositionCursor());
-        dessin.forward();
-        System.out.println(dessin.getPositionCursor());
-        dessin.backward();
-        System.out.println(dessin.getPositionCursor());
-        System.out.println(dessin.getOnAction());
-
     }
 
         private void addBlock(VBox vbox) {

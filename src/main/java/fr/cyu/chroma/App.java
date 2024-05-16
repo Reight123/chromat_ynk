@@ -1,5 +1,8 @@
 package fr.cyu.chroma;
 
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,14 +29,30 @@ public class App extends Application {
     private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
     private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURN", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock");
 
+
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Menu");
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        Rectangle2D
+                screenBounds = Screen.getPrimary().getVisualBounds();
+        Canvas canvas = new Canvas(300, 250);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
 
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
+        vbox.getChildren().add(canvas);
+
+        Pointer pointer = new Pointer(1,gc);
+        Button forwardButton = new Button("Forward");
+        forwardButton.setOnAction(e -> instruction(gc,1, pointer));
+        Button backwardButton = new Button("Backward");
+        backwardButton.setOnAction(e -> instruction(gc,2, pointer));
+        Button colorButton = new Button("Color");
+        colorButton.setOnAction(e -> instruction(gc,3, pointer));
+        vbox.getChildren().add(forwardButton);
+        vbox.getChildren().add(backwardButton);
+        vbox.getChildren().add(colorButton);
 
         Scene scene = new Scene(vbox, screenBounds.getWidth(), screenBounds.getHeight());
         scene.getStylesheets().add(("/style.css"));
@@ -42,7 +61,25 @@ public class App extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
 
+
+   private void instruction(GraphicsContext gc, int methode, Pointer pointer){
+        switch (methode){
+            case 1:
+                System.out.println(pointer);
+                pointer.forward();
+
+                break;
+            case 2:
+                pointer.backward();
+                break;
+            case 3:
+                pointer.addCouleur();
+        }
+    }
+
+    private void addBlock(VBox vbox) {
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
         choiceBox.getStyleClass().add("choice");
         choiceBox.setItems(choices);

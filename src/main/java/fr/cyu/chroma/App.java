@@ -43,7 +43,7 @@ public class App extends Application {
         vbox.setSpacing(10);
         vbox.getChildren().add(canvas);
 
-        Pointer pointer = new Pointer(1,gc);
+        Pointer pointer = new Pointer(gc);
         Button forwardButton = new Button("Forward");
         forwardButton.setOnAction(e -> instruction(gc,1, pointer));
         Button backwardButton = new Button("Backward");
@@ -68,11 +68,11 @@ public class App extends Application {
         switch (methode){
             case 1:
                 System.out.println(pointer);
-                pointer.forward();
+                pointer.forward(10);
 
                 break;
             case 2:
-                pointer.backward();
+                pointer.backward(10);
                 break;
             case 3:
                 pointer.addCouleur();
@@ -130,13 +130,14 @@ public class App extends Application {
         hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
         vbox.getChildren().add(index + 1, hbox);
 
+
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
     }
 
     private void deleteBlock(VBox vbox, ChoiceBox<String> choiceBox) {
         if (choiceBoxes.size() > 1) {
-            int index = choiceBoxes.indexOf(choiceBox);
+            int index = choiceBoxes.indexOf(  choiceBox);
             choiceBoxes.remove(index);
             valueFields.remove(index);
             vbox.getChildren().remove(index + 1);

@@ -25,6 +25,8 @@ public class App extends Application {
 
     private final ObservableList<ChoiceBox<String>> choiceBoxes = FXCollections.observableArrayList();
     private final ObservableList<TextField> valueFields = FXCollections.observableArrayList();
+    private final ObservableList<Button> addButtons = FXCollections.observableArrayList();
+    private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
     private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURN", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock");
 
 
@@ -53,13 +55,14 @@ public class App extends Application {
         vbox.getChildren().add(colorButton);
 
         Scene scene = new Scene(vbox, screenBounds.getWidth(), screenBounds.getHeight());
+        scene.getStylesheets().add(("/style.css"));
 
         addButtons(vbox);
-        addBlock(vbox);
 
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
 
    private void instruction(GraphicsContext gc, int methode, Pointer pointer){
         switch (methode){
@@ -76,39 +79,85 @@ public class App extends Application {
         }
     }
 
-        private void addBlock(VBox vbox) {
+    private void addBlock(VBox vbox) {
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.getStyleClass().add("choice");
         choiceBox.setItems(choices);
         choiceBoxes.add(choiceBox);
 
         TextField valueField = new TextField();
+        valueField.getStyleClass().add("value");
         valueFields.add(valueField);
 
+        Button addButton = new Button("+");
+        addButton.getStyleClass().add("buttonmodif");
+        addButton.setOnAction(event -> addNewBlockAfter(vbox, choiceBox));
+
+        Button deleteButton = new Button("-");
+        deleteButton.getStyleClass().add("buttonmodif");
+        deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
+
         HBox hbox = new HBox(10);
-        hbox.getChildren().addAll(choiceBox, new Label("Valeur:"), valueField);
+        hbox.getStyleClass().add("block-container");
+        hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
         vbox.getChildren().add(hbox);
+
+        addButtons.add(addButton);
+        deleteButtons.add(deleteButton);
     }
 
-    private void suprBlock(VBox vbox) {
-        if (choiceBoxes.size() > 1) {
-            choiceBoxes.remove(choiceBoxes.size() - 1);
-            valueFields.remove(valueFields.size() - 1);
+    private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
+        int index = choiceBoxes.indexOf(previousChoiceBox) + 1;
+        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.getStyleClass().add("choice");
+        choiceBox.setItems(choices);
+        choiceBoxes.add(index, choiceBox);
 
-            vbox.getChildren().remove(vbox.getChildren().size() - 1);
+        TextField valueField = new TextField();
+        valueField.getStyleClass().add("value");
+        valueFields.add(index, valueField);
+
+        Button addButton = new Button("+");
+        addButton.getStyleClass().add("buttonmodif");
+        addButton.setOnAction(event -> addNewBlockAfter(vbox, choiceBox));
+
+        Button deleteButton = new Button("-");
+        deleteButton.getStyleClass().add("buttonmodif");
+        deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
+
+        HBox hbox = new HBox(10);
+        hbox.getStyleClass().add("block-container");
+        hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
+        vbox.getChildren().add(index + 1, hbox);
+
+        addButtons.add(addButton);
+        deleteButtons.add(deleteButton);
+    }
+
+    private void deleteBlock(VBox vbox, ChoiceBox<String> choiceBox) {
+        if (choiceBoxes.size() > 1) {
+            int index = choiceBoxes.indexOf(choiceBox);
+            choiceBoxes.remove(index);
+            valueFields.remove(index);
+            vbox.getChildren().remove(index + 1);
+
+            addButtons.remove(index);
+            deleteButtons.remove(index);
         }
     }
 
     private void addButtons(VBox vbox) {
-        Button addButton = new Button("+");
-        addButton.setOnAction(event -> addBlock(vbox));
-        Button suprButton = new Button("-");
-        suprButton.setOnAction(event -> suprBlock(vbox));
         Button writeButton = new Button("Enregistrer dans un fichier");
+        writeButton.getStyleClass().add("button");
         writeButton.setOnAction(event -> writeCommand());
+
         Button selectFileButton = new Button("Sélectionner un fichier à exécuter");
+        selectFileButton.getStyleClass().add("button");
         selectFileButton.setOnAction(event -> selectFile());
 
-        vbox.getChildren().addAll(addButton, suprButton, writeButton, selectFileButton);
+        HBox buttonBox = new HBox(10);
+        buttonBox.getChildren().addAll(writeButton, selectFileButton);
+        vbox.getChildren().add(buttonBox);
     }
 
     private void writeCommand() {
@@ -130,6 +179,7 @@ public class App extends Application {
             });
             vbox.getChildren().addAll(fileNameField, confirmButton);
             Scene scene = new Scene(vbox, 400, 125);
+            scene.getStylesheets().add("/style.css");
             stage.setScene(scene);
             stage.show();
         } catch (Exception e) {

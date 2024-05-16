@@ -52,12 +52,7 @@ public class Main extends Application{
     }
 
     private void commands(GraphicsContext gc){
-         Pointer currentPointer;
-		 Pointer machin = new Pointer(gc); 
-		 currentPointer = machin ; 
-		 currentPointer.fwd( 100 ); 
-		 currentPointer.turnRight( 90 ); 
-		 currentPointer.bwd( 50 ); 
+        //insertion area do not delete//
     }
 
     public static void main(String[] args) {

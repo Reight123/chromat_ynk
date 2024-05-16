@@ -8,23 +8,25 @@ import java.util.regex.Pattern;
 
 public class Interpreter {
 
-	private int maxWindowWidth;                                                // window information needed to convert %age
+	private int maxWindowWidth;                                             // window information needed to convert %age
 
 	private final Map<String, String[]> keywords = new HashMap<>() {{		// create a map, with a regex expression to find keywords and isolate what is before and after, and the associated template
-		put("CURSOR\\s+", new String[]{"Cursor", "= new Cursor();"});		// separate the template in several parts, to put the inputs afterward
-		put("SELECT\\s+", new String[]{"currentCursor =", ";"});			// for commands that apply to the previously selected cursor, apply the change to the currentCursor instance
+		put("CURSOR\\s+", new String[]{"Pointer", "= new Pointer(gc);"});		// separate the template in several parts, to put the inputs afterward
+		put("SELECT\\s+", new String[]{"currentPointer =", ";"});			// for commands that apply to the previously selected pointer, apply the change to the currentPointer instance
 		put("REMOVE\\s+", new String[]{"", " = null;"});
-		put("FWD\\s+", new String[]{"currentCursor.fwd(", ");"});
-		put("BWD\\s+", new String[]{"currentCursor.bwd(", ");"});
-		put("TURN\\s+", new String[]{"currentCursor.turn(", ");"});
-		put("MOV\\s+", new String[]{"currentCursor.mov(", ");"});
-		put("POS\\s+", new String[]{"currentCursor.setPosition(", ");"});
-		put("HIDE\\s+", new String[]{"currentCursor.hide();",""});
-		put("SHOW\\s+", new String[]{"currentCursor.show();",""});
-		put("PRESS\\s+", new String[]{"currentCursor.setOpacity(",");"});
-		put("THICK\\s+", new String[]{"currentCursor.setThickness(",");"});
-		put("COLOR\\s+", new String[]{"currentCursor.setColor(", ");"});
-		put("LOOKAT\\s+", new String[]{"currentCursor.setOrientation(",");"});
+		put("FWD\\s+", new String[]{"currentPointer.fwd(", ");"});
+		put("BWD\\s+", new String[]{"currentPointer.bwd(", ");"});
+		put("TURN\\s+", new String[]{"currentPointer.turnRight(", ");"});
+		put("TURNR\\s+", new String[]{"currentPointer.turnRight(", ");"});
+		put("TURNL\\s+", new String[]{"currentPointer.turnLeft(", ");"});
+		put("MOV\\s+", new String[]{"currentPointer.mov(", ");"});
+		put("POS\\s+", new String[]{"currentPointer.pos(", ");"});
+		put("HIDE\\s+", new String[]{"currentPointer.hide();",""});
+		put("SHOW\\s+", new String[]{"currentPointer.show();",""});
+		put("PRESS\\s+", new String[]{"currentPointer.setOpacity(",");"});
+		put("THICK\\s+", new String[]{"currentPointer.setThickness(",");"});
+		put("COLOR\\s+", new String[]{"currentPointer.setColor(", ");"});
+		put("LOOKAT\\s+", new String[]{"currentPointer.lookat(",");"});
 		put("NUM\\s+", new String[]{"double ",";"});
 		put("INT\\s+", new String[]{"int ",";"});
 		put("STR\\s+", new String[]{"String ",";"});
@@ -66,7 +68,7 @@ public class Interpreter {
 	 */
 	public String decode(String cyCode) {
 		String indentation = "\t\t";
-		String javaCode = " Cursor currentCursor;";			// currentCursor must be declared because the user won't do it
+		String javaCode = " Pointer currentPointer;";			// currentPointer must be declared because the user won't do it
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
 		cyCode = cyCode.replaceAll("\\}", " }\n");		    	    // skip line after } to prevent have code on the same line after a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));		// separate in a list of lines
@@ -197,15 +199,15 @@ public class Interpreter {
 				Matcher matcher = regex.matcher(input);                     // look for the pattern in the string
 
 				while (matcher.find()) {
-					String[] str = input.split(matcher.group(0), 2);    // split the string just for the first occurrence
-					if (str.length == 2){
+					String[] str = input.split(matcher.group(0), 2);    	// split the string just for the first occurrence
+					if (str.length == 2){									// if the pattern is included in the input
 						input = str[0] + "(int) (" + matcher.group(1) + "*(" + this.maxWindowWidth + "/100))" + str[1];
-					} else {                                                 // if the input is the matcher.group(0)
+					} else {                                                 // if the input is the matcher.group(0), meaning the pattern is the whole input
 						input = "(int) (" + matcher.group(1) + "*(" + this.maxWindowWidth + "/100))";
 					}
-					matcher = regex.matcher(input);                         // look fot another
+					matcher = regex.matcher(input);                         // look fot another match in the input
 				}
-			}else {                                                         // if the command is PRESS, then the percentage does not depend on the window size
+			}else {                                                         // if the command is PRESS, then the percentage does not depend on the window size, it just needs to be divided by 100
 				String pattern = "(\\w+\\.?\\d*)\\s*%";
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input);

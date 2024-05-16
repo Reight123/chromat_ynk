@@ -1,5 +1,8 @@
 package fr.cyu.chroma;
 
+
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -24,6 +27,8 @@ public class App extends Application {
 
     private final ObservableList<ChoiceBox<String>> choiceBoxes = FXCollections.observableArrayList();
     private final ObservableList<TextField> valueFields = FXCollections.observableArrayList();
+    private final ObservableList<Button> addButtons = FXCollections.observableArrayList();
+    private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
     private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURN", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock");
     private int drawingWindowWidth = 500;
     private int drawingWindowHeight = 500;
@@ -32,53 +37,126 @@ public class App extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Menu");
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        //Canvas canvas = new Canvas(300, 250);
+        //GraphicsContext gc = canvas.getGraphicsContext2D();
 
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
+        //vbox.getChildren().add(canvas);
+
+
+        /*
+        Pointer pointer = new Pointer(gc);
+        Button forwardButton = new Button("Forward");
+        forwardButton.setOnAction(e -> instruction(gc,1, pointer));
+        Button backwardButton = new Button("Backward");
+        backwardButton.setOnAction(e -> instruction(gc,2, pointer));
+        Button colorButton = new Button("Color");
+        colorButton.setOnAction(e -> instruction(gc,3, pointer));
+        vbox.getChildren().add(forwardButton);
+        vbox.getChildren().add(backwardButton);
+        vbox.getChildren().add(colorButton);
+        */
 
         Scene scene = new Scene(vbox, screenBounds.getWidth(), screenBounds.getHeight());
+        scene.getStylesheets().add(("/style.css"));
 
         addButtons(vbox);
-        addBlock(vbox);
 
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
 
-    private void addBlock(VBox vbox) {
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.getStyleClass().add("choice");
         choiceBox.setItems(choices);
         choiceBoxes.add(choiceBox);
 
         TextField valueField = new TextField();
+        valueField.getStyleClass().add("value");
         valueFields.add(valueField);
 
+        Button addButton = new Button("+");
+        addButton.getStyleClass().add("buttonmodif");
+        addButton.setOnAction(event -> addNewBlockAfter(vbox, choiceBox));
+
+        Button deleteButton = new Button("-");
+        deleteButton.getStyleClass().add("buttonmodif");
+        deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
+
         HBox hbox = new HBox(10);
-        hbox.getChildren().addAll(choiceBox, new Label("Valeur:"), valueField);
+        hbox.getStyleClass().add("block-container");
+        hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
         vbox.getChildren().add(hbox);
+
+        addButtons.add(addButton);
+        deleteButtons.add(deleteButton);
     }
 
-    private void suprBlock(VBox vbox) {
-        if (choiceBoxes.size() > 1) {
-            choiceBoxes.remove(choiceBoxes.size() - 1);
-            valueFields.remove(valueFields.size() - 1);
+    private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
+        int index = choiceBoxes.indexOf(previousChoiceBox) + 1;
+        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.getStyleClass().add("choice");
+        choiceBox.setItems(choices);
+        choiceBoxes.add(index, choiceBox);
 
-            vbox.getChildren().remove(vbox.getChildren().size() - 1);
+        TextField valueField = new TextField();
+        valueField.getStyleClass().add("value");
+        valueFields.add(index, valueField);
+
+        Button addButton = new Button("+");
+        addButton.getStyleClass().add("buttonmodif");
+        addButton.setOnAction(event -> addNewBlockAfter(vbox, choiceBox));
+
+        Button deleteButton = new Button("-");
+        deleteButton.getStyleClass().add("buttonmodif");
+        deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
+
+        HBox hbox = new HBox(10);
+        hbox.getStyleClass().add("block-container");
+        hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
+        vbox.getChildren().add(index + 1, hbox);
+
+
+        addButtons.add(addButton);
+        deleteButtons.add(deleteButton);
+    }
+
+    private void deleteBlock(VBox vbox, ChoiceBox<String> choiceBox) {
+        if (choiceBoxes.size() > 1) {
+            int index = choiceBoxes.indexOf(  choiceBox);
+            choiceBoxes.remove(index);
+            valueFields.remove(index);
+            vbox.getChildren().remove(index + 1);
+
+            addButtons.remove(index);
+            deleteButtons.remove(index);
         }
     }
 
     private void addButtons(VBox vbox) {
-        Button addButton = new Button("+");
-        addButton.setOnAction(event -> addBlock(vbox));
-        Button suprButton = new Button("-");
-        suprButton.setOnAction(event -> suprBlock(vbox));
         Button writeButton = new Button("Enregistrer dans un fichier");
+        writeButton.getStyleClass().add("button");
         writeButton.setOnAction(event -> writeCommand());
-        Button selectFileButton = new Button("Sélectionner un fichier à exécuter");
-        selectFileButton.setOnAction(event -> executeFile());
 
-        vbox.getChildren().addAll(addButton, suprButton, writeButton, selectFileButton);
+        Button selectFileButton = new Button("Sélectionner un fichier à exécuter");
+        selectFileButton.getStyleClass().add("button");
+        selectFileButton.setOnAction(event -> {
+            File file = selectFile();
+            executeFile(file);
+        });
+
+        Button selectThisFileButton = new Button("Exécuter ce fichier");
+        selectThisFileButton.getStyleClass().add("button");
+        selectThisFileButton.setOnAction(event -> {
+            saveToFile(".currentFile");
+            File file = new File("./storage/.currentFile.txt");
+            executeFile(file);
+        });
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.getChildren().addAll(writeButton, selectFileButton, selectThisFileButton);
+        vbox.getChildren().add(buttonBox);
     }
 
     private void writeCommand() {
@@ -100,6 +178,7 @@ public class App extends Application {
             });
             vbox.getChildren().addAll(fileNameField, confirmButton);
             Scene scene = new Scene(vbox, 400, 125);
+            scene.getStylesheets().add("/style.css");
             stage.setScene(scene);
             stage.show();
         } catch (Exception e) {
@@ -131,17 +210,24 @@ public class App extends Application {
             bufferedWriter.close();
             System.out.println("Commands written to file successfully.");
         } catch (IOException e) {
-            System.out.println("Error while writing commands to file: " + e.getMessage());
+            System.out.println("Error writing commands to file: " + e.getMessage());
         }
     }
 
-    private void executeFile(){
+    private File selectFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Sélectionner un fichier");
         String directory = "storage/";
         File repertoireInitial = new File(directory);
         fileChooser.setInitialDirectory(repertoireInitial);
         File selectedFile = fileChooser.showOpenDialog(null);
+        return selectedFile;
+    }
+
+    private void executeFile(File selectedFile){
+        if (selectedFile == null) {
+            selectedFile = selectFile();
+        }
 
         String fileContent = getFileContent(selectedFile);
         String javaCode = "";
@@ -151,21 +237,21 @@ public class App extends Application {
             try {
                 Interpreter interpreter = new Interpreter(this.drawingWindowWidth, this.drawingWindowHeight);
                 javaCode = interpreter.decode(fileContent);
-                File templateFile = new File("../plotter/templateMain.java");
+                File templateFile = new File("../plotter/src/main/template/templateMain.java");
                 String temp = getFileContent(templateFile);
-                String[] template = temp.split("//insert // do not delete");
+                String[] template = temp.split("//insertion area do not delete//");
 
                 if (template.length == 2 && !temp.isEmpty()) {
                     javaCode = template[0] + javaCode + template[1];
                     writeJavaFile(javaCode);
                 }
+
+                if(!javaCode.isEmpty()){
+                    run();
+                }
+
             } catch (Exception e){
                 System.out.println("Error while compiling commands to java: " + e.getMessage());
-            }
-
-            if(!javaCode.isEmpty()){
-                run();
-            }else{
                 // TODO tell user that operation failed
             }
         }else{
@@ -207,7 +293,7 @@ public class App extends Application {
 
 
 
-    private void run(){
+    private static void run(){
         try{
             String pathPlotter = "../plotter/pom.xml";
             if (System.getProperty("os.name").toLowerCase().contains("windows")) {
@@ -216,6 +302,7 @@ public class App extends Application {
             if (System.getProperty("os.name").toLowerCase().contains("linux")) {
                 new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run").start();
             }
+            // TODO get the output of commands and check if it does not send back errors, and display them if needed
 
         }catch (Exception e){
             System.out.println("Error while executing file: " + e.getMessage());

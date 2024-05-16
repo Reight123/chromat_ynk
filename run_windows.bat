@@ -2,8 +2,15 @@
 
 if "%MAVEN_HOME%"=="" (
     echo .
-    echo "Maven isn't installed (%MAVEN_HOME% variable undefined)"
-    exit /b 1
+    echo "Error : Maven isn't installed (%MAVEN_HOME% variable undefined)"
+    pause
+) else (
+    if not exist "chromat_ynk\pom.xml" (
+        echo "Error : chromat_ynk\pom.xml file not found"
+        pause
+    ) else (
+        mvn -f chromat_ynk\pom.xml javafx:run
+    )
 )
 
-mvn -f chromat_ynk\pom.xml javafx:run
+

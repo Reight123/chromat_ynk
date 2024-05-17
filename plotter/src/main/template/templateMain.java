@@ -35,12 +35,10 @@ public class Main extends Application {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
         VBox vbox = new VBox();
-        vbox.getStylesheets().add(("../../../chromat_ynk/src/main/resources/style.css"));
+        vbox.getStylesheets().add(("styleleretour.css"));
         vbox.getChildren().add(canvas);
 
         Scene scene = new Scene(vbox, 800, 850);
-
-
 
         primaryStage.setScene(scene);
         primaryStage.show();

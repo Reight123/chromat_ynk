@@ -1,8 +1,5 @@
 package fr.cyu.chroma;
 
-
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,7 +26,7 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = FXCollections.observableArrayList();
     private final ObservableList<Button> addButtons = FXCollections.observableArrayList();
     private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
-    private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURN", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock");
+    private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURNL", "TURNR","MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock","FinMIMIC","FinMIRROR");
     private int drawingWindowWidth = 500;
     private int drawingWindowHeight = 500;
 
@@ -37,29 +34,12 @@ public class App extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Menu");
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        //Canvas canvas = new Canvas(300, 250);
-        //GraphicsContext gc = canvas.getGraphicsContext2D();
 
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
         vbox.getStylesheets().add(("/style.css"));
 
-        //vbox.getChildren().add(canvas);
-
-
-        /*
-        Pointer pointer = new Pointer(gc);
-        Button forwardButton = new Button("Forward");
-        forwardButton.setOnAction(e -> instruction(gc,1, pointer));
-        Button backwardButton = new Button("Backward");
-        backwardButton.setOnAction(e -> instruction(gc,2, pointer));
-        Button colorButton = new Button("Color");
-        colorButton.setOnAction(e -> instruction(gc,3, pointer));
-        vbox.getChildren().add(forwardButton);
-        vbox.getChildren().add(backwardButton);
-        vbox.getChildren().add(colorButton);
-        */
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(vbox);
 

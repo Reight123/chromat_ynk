@@ -1,57 +1,71 @@
 package fr.cyu.chroma;
 
-import javafx.animation.AnimationTimer;
+import javafx.application.Application;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-
-public class Main extends Application{
+public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
+        primaryStage.setTitle("Votre dessin");
+        primaryStage.setAlwaysOnTop(true);
+        primaryStage.requestFocus();
+        primaryStage.setX(1000);
+        primaryStage.setY(125);
 
-        primaryStage.setTitle("Plotter");
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setResizable(false);
+
+        primaryStage.xProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal.equals(100.0)) {
+                primaryStage.setX(1000);
+            }
+        });
+        primaryStage.yProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal.equals(100.0)) {
+                primaryStage.setY(125);
+            }
+        });
+
         Canvas canvas = new Canvas(800, 800);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
         VBox vbox = new VBox();
-        vbox.setPadding(new Insets(40));
-        vbox.setSpacing(10);
+        vbox.getStylesheets().add(("styleleretour.css"));
         vbox.getChildren().add(canvas);
 
-        Scene scene = new Scene(vbox, 800, 800);
-
-        //addButtons(vbox);
+        Scene scene = new Scene(vbox, 800, 850);
 
         primaryStage.setScene(scene);
         primaryStage.show();
 
-
-
-
-
         commands(gc);
 
+        addButtons(vbox);
         // TODO add a button to begin the drawing, and another to delete the drawing and draw it again
-
     }
 
-    private void commands(GraphicsContext gc){
+    private void addButtons(VBox vbox) {
+
+        Button nextButton = new Button("Etape suivante");
+        nextButton.getStyleClass().add("button");
+
+
+        Button saveDrawingButton = new Button("Enregistrer ce dessin");
+        saveDrawingButton.getStyleClass().add("button");
+
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.getChildren().addAll(nextButton, saveDrawingButton);
+        vbox.getChildren().add(buttonBox);
+    }
+
+
+    private void commands(GraphicsContext gc) {
         //insertion area do not delete//
     }
 
@@ -59,5 +73,3 @@ public class Main extends Application{
         launch();
     }
 }
-
-

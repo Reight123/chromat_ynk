@@ -4,7 +4,7 @@
 }
 
 .button {
-    -fx-min-width: 380px;
+    -fx-min-width: 280px;
     -fx-background-color: #ed2e2e;
     -fx-border: none;
     -fx-color: white;
@@ -66,5 +66,16 @@
 
 .value:hover {
     -fx-background-color: #ff9595;
+    -fx-cursor: hand;
+}
+
+.thumb {
+    -fx-background-color: #ed2e2e;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10px;
+}
+
+.thumb:hover {
+    -fx-background-color: #b50000;
     -fx-cursor: hand;
 }

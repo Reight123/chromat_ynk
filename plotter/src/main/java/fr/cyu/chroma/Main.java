@@ -53,11 +53,10 @@ public class Main extends Application{
 
     private void commands(GraphicsContext gc){
          Pointer currentPointer;
-		 Pointer machin = new Pointer(gc); 
-		 currentPointer = machin ; 
-		 currentPointer.fwd( 100 ); 
-		 currentPointer.turnRight( 90 ); 
-		 currentPointer.bwd( 50 ); 
+		 Pointer curseur1 = new Pointer(gc); 
+		 currentPointer = curseur1 ; 
+		 currentPointer.mov( 74,73 ); 
+		 currentPointer.mov( 125,73 ); 
     }
 
     public static void main(String[] args) {

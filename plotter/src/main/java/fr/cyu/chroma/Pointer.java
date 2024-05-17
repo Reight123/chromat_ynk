@@ -129,7 +129,58 @@ public class Pointer {
         pos_y+=value*Math.sin(direction*Math.PI/180);
 
     }
+    public void fwd(double value) {
+
+        System.out.println("Demarrage");
+        //this.gc.setStroke(Color.BLUE);
+        //this.gc.setLineWidth(2);
+        //int value = 100;
+        //direction = cursor.getDirection();
+        //int direction = 2;*
+        double x1 = this.pos_x;
+        double y1 = this.pos_y;
+        double[] pointsX = {x1, x1};
+        double[] pointsY = {y1, y1};
+        AnimationTimer timer = new AnimationTimer() {
+            int count = 0;
+
+            public void handle(long l) {
+                if (value < 0) {
+                    // gc.setStroke(Color.BLUE);
+                    pointsX[1] -= Math.cos(direction * Math.PI / 180);
+                    pointsY[1] -= Math.sin(direction * Math.PI / 180);
+                }
+                else {
+                    pointsX[1] += Math.cos(direction * Math.PI / 180);
+                    pointsY[1] += Math.sin(direction * Math.PI / 180);
+                }
+                gc.setLineWidth(2);
+                gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
+                //System.out.println(pointsX[1] + "," + pointsY[1]+ ",(" + pointsX[0] + "," + pointsY[0]);
+
+                try {
+                    TimeUnit.MILLISECONDS.sleep(5);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                count++;
+
+                if (count >= Math.abs(value)) {
+                    stop();
+                    //System.out.println("Forward fini");
+
+                }
+            }
+        };
+        timer.start();
+        pos_x+=value*Math.cos(direction*Math.PI/180);
+        pos_y+=value*Math.sin(direction*Math.PI/180);
+
+    }
     public void bwd(int value){
+        fwd(-1*value);
+    }
+    public void bwd(double value){
         fwd(-1*value);
     }
 
@@ -145,8 +196,22 @@ public class Pointer {
         pos_x=x;
         pos_y=y;
     }
-
-    public void mov(double x, double y){}
+    public void pos(int x, int y){
+        pos_x=x;
+        pos_y=y;
+    }
+    public void mov(double x, double y){
+        int teta_initial=direction;
+        direction=(int) Math.atan(y/x);
+        fwd(Math.sqrt(y*y+x*x));
+        direction=teta_initial;
+    }
+    public void mov(int x, int y){
+        int teta_initial=direction;
+        direction= (int) Math.atan(y/x);
+        fwd(Math.sqrt(y*y+x*x));
+        direction=teta_initial;
+    }
 
     public void hide(){}
 

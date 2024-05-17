@@ -43,6 +43,8 @@ public class App extends Application {
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
+        vbox.getStylesheets().add(("/style.css"));
+
         //vbox.getChildren().add(canvas);
 
 
@@ -58,14 +60,13 @@ public class App extends Application {
         vbox.getChildren().add(backwardButton);
         vbox.getChildren().add(colorButton);
         */
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setContent(vbox);
 
-        Scene scene = new Scene(vbox, screenBounds.getWidth(), screenBounds.getHeight());
-        scene.getStylesheets().add(("/style.css"));
+
+        Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight());
 
         addButtons(vbox);
-
-        primaryStage.setScene(scene);
-        primaryStage.show();
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
         choiceBox.getStyleClass().add("choice");
@@ -91,6 +92,9 @@ public class App extends Application {
 
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
+
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
     private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {

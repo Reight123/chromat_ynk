@@ -302,6 +302,9 @@ public class App extends Application {
             if (System.getProperty("os.name").toLowerCase().contains("linux")) {
                 new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run").start();
             }
+            if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run").start();
+            }
             // TODO get the output of commands and check if it does not send back errors, and display them if needed
 
         }catch (Exception e){

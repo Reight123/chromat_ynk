@@ -62,9 +62,6 @@ public class Pointer {
         this.direction = direction;
     }
 
-    public void setIs_shown(boolean is_shown) {
-        this.is_shown = is_shown;
-    }
 
     public void setOpacity(int opacity) {
         this.opacity = opacity;
@@ -154,7 +151,7 @@ public class Pointer {
                     pointsX[1] += Math.cos(direction * Math.PI / 180);
                     pointsY[1] += Math.sin(direction * Math.PI / 180);
                 }
-                gc.setLineWidth(2);
+                gc.setLineWidth(thick);
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
                 //System.out.println(pointsX[1] + "," + pointsY[1]+ ",(" + pointsX[0] + "," + pointsY[0]);
 
@@ -219,11 +216,17 @@ public class Pointer {
         direction=teta_initial;
     }
 
-    public void hide(){}
+    public void hide(){
+        is_shown = false;
+    }
 
-    public void show(){}
+    public void show(){
+        is_shown = true;
+    }
 
-    public void setColor(int red, int green, int blue){}
+    public void setColor(int red, int green, int blue){
+
+    }
 
     public void setColor(String hexadecimal){}
 

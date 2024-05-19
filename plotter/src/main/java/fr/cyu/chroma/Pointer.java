@@ -17,7 +17,7 @@ public class Pointer {
 
 
 
-    private GraphicsContext gc;
+    private final GraphicsContext gc;
 
     private Color[] colors = {Color.BLUE, Color.RED, Color.GREEN};
 
@@ -184,9 +184,15 @@ public class Pointer {
     public void turnRight(int i){
         direction-=i;
     }
+    public void turnRight(double i){
+        direction-= (int) i;
+    }
 
     public void turnLeft(int i){
         direction+=i;
+    }
+    public void turnLeft(double i){
+        direction+= (int) i;
     }
 
     public void pos(double x, double y){
@@ -205,7 +211,7 @@ public class Pointer {
     }
     public void mov(int x, int y){
         int teta_initial=direction;
-        direction= (int) Math.atan(y/x);
+        direction= (int) Math.atan((double) y /x);
         fwd(Math.sqrt(y*y+x*x));
         direction=teta_initial;
     }
@@ -224,8 +230,12 @@ public class Pointer {
 
     public void setColor(String hexadecimal){}
 
-    public void lookat(Pointer pointer){}
-
+    public void lookat(int x, int y){
+        lookat((double) x, (double) y);
+    }
+    public void lookat(Pointer pointer){
+        lookat(pointer.getPos_x(), pointer.getPos_y());
+    }
     public void lookat(double x, double y){}
 
     /*public void addCouleur(){

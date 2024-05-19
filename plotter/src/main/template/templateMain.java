@@ -35,7 +35,7 @@ public class Main extends Application {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
         VBox vbox = new VBox();
-        vbox.getStylesheets().add(("styleleretour.css"));
+        vbox.getStylesheets().add(("/style.css"));
         vbox.getChildren().add(canvas);
 
         Scene scene = new Scene(vbox, 800, 850);

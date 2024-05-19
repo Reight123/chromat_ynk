@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class App extends Application {
@@ -27,8 +28,8 @@ public class App extends Application {
     private final ObservableList<Button> addButtons = FXCollections.observableArrayList();
     private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
     private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURNL", "TURNR","MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock","FinMIMIC","FinMIRROR");
-    private int drawingWindowWidth = 500;
-    private int drawingWindowHeight = 500;
+    private final int drawingWindowWidth = 500;
+    private final int drawingWindowHeight = 500;
 
     @Override
     public void start(Stage primaryStage) {
@@ -228,11 +229,11 @@ public class App extends Application {
                 if (template.length == 2 && !temp.isEmpty()) {
                     javaCode = template[0] + javaCode + template[1];
                     writeJavaFile(javaCode);
+                    if(!javaCode.isEmpty()){
+                        run();
+                    }
                 }
 
-                if(!javaCode.isEmpty()){
-                    run();
-                }
 
             } catch (Exception e){
                 System.out.println("Error while compiling commands to java: " + e.getMessage());
@@ -280,13 +281,39 @@ public class App extends Application {
     private static void run(){
         try{
             String pathPlotter = "../plotter/pom.xml";
-            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run").start();
+            String osName = System.getProperty("os.name").toLowerCase();
+            ProcessBuilder processBuilder;
+            if (osName.contains("windows")) {
+                processBuilder = new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run");
+            } else if (osName.contains("linux") || osName.contains("mac")) {
+                processBuilder = new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run");
+            } else{
+                // TODO tell the user the OS is not supported and quit function
+                processBuilder = new ProcessBuilder("");
             }
-            if (System.getProperty("os.name").toLowerCase().contains("linux")) {
-                new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run").start();
+
+            Process process = processBuilder.start();
+
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String error;
+            boolean interestingPart = false;
+            while ((error = stdError.readLine()) != null) {
+                if (error.contains("[Help 1]")){                // when the error finishes explaining the pb, stop printing it
+                    interestingPart = false;
+                }
+                if (interestingPart){
+                    if (error.contains("variable currentPointer might not have been initialized")) {    // as this error cannot be understood by the user, write on that can be
+                        System.out.println("Call of a function, but no cursor where selected");
+                    } else {
+                        System.out.println(error);
+                    }
+                }
+                if (error.contains("Failed to execute goal")){          // when the error explains what is th pb, start printing it
+                    interestingPart = true;
+                    System.out.println("Error while executing  ");
+                }
             }
-            // TODO get the output of commands and check if it does not send back errors, and display them if needed
 
         }catch (Exception e){
             System.out.println("Error while executing file: " + e.getMessage());

@@ -13,16 +13,15 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Votre dessin");
-        primaryStage.setAlwaysOnTop(true);
-        primaryStage.requestFocus();
-        primaryStage.setX(1000);
+        primaryStage.setX(1050);
         primaryStage.setY(125);
 
+        primaryStage.setAlwaysOnTop(true);
         primaryStage.setResizable(false);
 
         primaryStage.xProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal.equals(100.0)) {
-                primaryStage.setX(1000);
+                primaryStage.setX(1050);
             }
         });
         primaryStage.yProperty().addListener((obs, oldVal, newVal) -> {
@@ -38,7 +37,7 @@ public class Main extends Application {
         vbox.getStylesheets().add(("/style.css"));
         vbox.getChildren().add(canvas);
 
-        Scene scene = new Scene(vbox, 800, 850);
+        Scene scene = new Scene(vbox, 800, 870);
 
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -46,20 +45,18 @@ public class Main extends Application {
         commands(gc);
 
         addButtons(vbox);
-        // TODO add a button to begin the drawing, and another to delete the drawing and draw it again
     }
 
     private void addButtons(VBox vbox) {
 
         Button nextButton = new Button("Etape suivante");
-        nextButton.getStyleClass().add("button");
-
+        nextButton.getStyleClass().add("buttondraw");
 
         Button saveDrawingButton = new Button("Enregistrer ce dessin");
-        saveDrawingButton.getStyleClass().add("button");
-
+        saveDrawingButton.getStyleClass().add("buttondraw");
 
         HBox buttonBox = new HBox(10);
+        buttonBox.getStyleClass().add("boxdraw");
         buttonBox.getChildren().addAll(nextButton, saveDrawingButton);
         vbox.getChildren().add(buttonBox);
     }

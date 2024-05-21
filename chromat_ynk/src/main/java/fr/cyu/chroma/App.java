@@ -27,9 +27,10 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = FXCollections.observableArrayList();
     private final ObservableList<Button> addButtons = FXCollections.observableArrayList();
     private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
-    private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURNL", "TURNR","MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock","FinMIMIC","FinMIRROR");
-    private final int drawingWindowWidth = 500;
-    private final int drawingWindowHeight = 500;
+    private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURNL", "TURNR", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock", "FinMIMIC", "FinMIRROR");
+    private final ObservableList<String> error = FXCollections.observableArrayList("Erreur :");
+    private final int drawingWindowWidth = 800;
+    private final int drawingWindowHeight = 800;
 
     @Override
     public void start(Stage primaryStage) {
@@ -43,7 +44,7 @@ public class App extends Application {
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(vbox);
-
+        scrollPane.getStylesheets().add(("/style.css"));
 
         Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight());
 
@@ -67,15 +68,31 @@ public class App extends Application {
         deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
 
         HBox hbox = new HBox(10);
-        hbox.getStyleClass().add("block-container");
+        hbox.getStyleClass().add("box");
         hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
         vbox.getChildren().add(hbox);
 
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
 
+        addGreyBox(vbox, error);
+
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void addGreyBox(VBox vbox, ObservableList<String> items) {
+        VBox greyBox = new VBox();
+        greyBox.getStyleClass().add("gbox");
+        greyBox.setPadding(new Insets(10));
+        greyBox.setSpacing(5);
+
+        for (String item : items) {
+            Label label = new Label(item);
+            greyBox.getChildren().add(label);
+        }
+
+        vbox.getChildren().add(greyBox);
     }
 
     private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
@@ -98,10 +115,9 @@ public class App extends Application {
         deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
 
         HBox hbox = new HBox(10);
-        hbox.getStyleClass().add("block-container");
+        hbox.getStyleClass().add("box");
         hbox.getChildren().addAll(choiceBox, valueField, addButton, deleteButton);
         vbox.getChildren().add(index + 1, hbox);
-
 
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
@@ -109,7 +125,7 @@ public class App extends Application {
 
     private void deleteBlock(VBox vbox, ChoiceBox<String> choiceBox) {
         if (choiceBoxes.size() > 1) {
-            int index = choiceBoxes.indexOf(  choiceBox);
+            int index = choiceBoxes.indexOf(choiceBox);
             choiceBoxes.remove(index);
             valueFields.remove(index);
             vbox.getChildren().remove(index + 1);
@@ -209,7 +225,7 @@ public class App extends Application {
         return selectedFile;
     }
 
-    private void executeFile(File selectedFile){
+    private void executeFile(File selectedFile) {
         if (selectedFile == null) {
             selectedFile = selectFile();
         }
@@ -217,8 +233,7 @@ public class App extends Application {
         String fileContent = getFileContent(selectedFile);
         String javaCode = "";
 
-        if(!fileContent.isEmpty()){
-
+        if (!fileContent.isEmpty()) {
             try {
                 Interpreter interpreter = new Interpreter(this.drawingWindowWidth, this.drawingWindowHeight);
                 javaCode = interpreter.decode(fileContent);
@@ -229,23 +244,18 @@ public class App extends Application {
                 if (template.length == 2 && !temp.isEmpty()) {
                     javaCode = template[0] + javaCode + template[1];
                     writeJavaFile(javaCode);
-                    if(!javaCode.isEmpty()){
+                    if (!javaCode.isEmpty()) {
                         run();
                     }
                 }
-
-
-            } catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("Error while compiling commands to java: " + e.getMessage());
                 // TODO tell user that operation failed
             }
-        }else{
+        } else {
             // TODO tell user that operation failed
         }
-
     }
-
-
 
     private String getFileContent(File selectedFile) {
         String fileContent = "";
@@ -261,14 +271,13 @@ public class App extends Application {
                 System.out.println("Error while reading file: " + e.getMessage());
             }
             return fileContent;
-        }else{
+        } else {
             System.out.println("Error while reading file: " + "null File");
             return "";
         }
     }
 
-
-    private void writeJavaFile(String fileContent){
+    private void writeJavaFile(String fileContent) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("../plotter/src/main/java/fr/cyu/chroma/Main.java"))) {
             writer.write(fileContent);
         } catch (IOException e) {
@@ -276,46 +285,17 @@ public class App extends Application {
         }
     }
 
-
-
-    private static void run(){
-        try{
+    private static void run() {
+        try {
             String pathPlotter = "../plotter/pom.xml";
-            String osName = System.getProperty("os.name").toLowerCase();
-            ProcessBuilder processBuilder;
-            if (osName.contains("windows")) {
-                processBuilder = new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run");
-            } else if (osName.contains("linux") || osName.contains("mac")) {
-                processBuilder = new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run");
-            } else{
-                // TODO tell the user the OS is not supported and quit function
-                processBuilder = new ProcessBuilder("");
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run").start();
             }
-
-            Process process = processBuilder.start();
-
-            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            String error;
-            boolean interestingPart = false;
-            while ((error = stdError.readLine()) != null) {
-                if (error.contains("[Help 1]")){                // when the error finishes explaining the pb, stop printing it
-                    interestingPart = false;
-                }
-                if (interestingPart){
-                    if (error.contains("variable currentPointer might not have been initialized")) {    // as this error cannot be understood by the user, write on that can be
-                        System.out.println("Call of a function, but no cursor where selected");
-                    } else {
-                        System.out.println(error);
-                    }
-                }
-                if (error.contains("Failed to execute goal")){          // when the error explains what is th pb, start printing it
-                    interestingPart = true;
-                    System.out.println("Error while executing  ");
-                }
+            if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+                new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run").start();
             }
-
-        }catch (Exception e){
+            // TODO get the output of commands and check if it does not send back errors, and display them if needed
+        } catch (Exception e) {
             System.out.println("Error while executing file: " + e.getMessage());
         }
     }

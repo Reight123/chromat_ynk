@@ -11,7 +11,7 @@ public class Interpreter {
 	private int maxWindowWidth;                                             // window information needed to convert %age
 
 	private final Map<String, String[]> keywords = new HashMap<>() {{		// create a map, with a regex expression to find keywords and isolate what is before and after, and the associated template
-		put("CURSOR\\s+", new String[]{"Pointer", "= new Pointer(gc);"});		// separate the template in several parts, to put the inputs afterward
+		put("CURSOR\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});				// separate the template in several parts, to put the inputs afterward
 		put("SELECT\\s+", new String[]{"currentPointer =", ";"});			// for commands that apply to the previously selected pointer, apply the change to the currentPointer instance
 		put("REMOVE\\s+", new String[]{"", " = null;"});
 		put("FWD\\s+", new String[]{"currentPointer.fwd(", ");"});
@@ -19,7 +19,7 @@ public class Interpreter {
 		put("TURN\\s+", new String[]{"currentPointer.turnRight(", ");"});
 		put("TURNR\\s+", new String[]{"currentPointer.turnRight(", ");"});
 		put("TURNL\\s+", new String[]{"currentPointer.turnLeft(", ");"});
-		put("MOV\\s+", new String[]{"currentPointer.mov(", ");"});
+		put("MOV\\s+", new String[]{"currentPointer.move(", ");"});
 		put("POS\\s+", new String[]{"currentPointer.pos(", ");"});
 		put("HIDE\\s+", new String[]{"currentPointer.hide();",""});
 		put("SHOW\\s+", new String[]{"currentPointer.show();",""});
@@ -34,12 +34,13 @@ public class Interpreter {
 		put("DEL\\s+", new String[]{""," = null;"});
 		put("IF\\s+", new String[]{"if(", "){"});
 		put("WHILE\\s+", new String[]{"while(", "){"});
-		put("MIMIC\\s+", new String[]{"mimic(", "){ // temporary "});
 		put("MIRROR\\s+", new String[]{"mirror(", "){ // temporary "});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{}); // the FOR is peculiar and is handled separately, thus the empty String
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)", new String[]{});
+		put("MIMIC\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});
+		put("MIMICEND\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});
 
 	}};
 
@@ -91,12 +92,12 @@ public class Interpreter {
 				Pattern pattern = Pattern.compile(key);
 				Matcher matcher = pattern.matcher(newCyLine);				// for each keyword, check if one match the line
 				if (matcher.find()) {
-
 					if (newCyLine.contains("}")){							// check if the cyCode contains a }, and if so remove it, to replace it later at the right place
 						newCyLine = newCyLine.replaceAll("}", "");
 						containsEnd = true;
 					}
-					if (!key.contains("FOR")) {                             // the FOR syntax is peculiar and must be handled separately
+
+					if (!key.contains("FOR")  && !key.startsWith("MIMIC") /*!(key.contains("MIMIC") && !key.contains("ENDMIMIC"))*/ && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
 
 						String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
 						int i = 0;
@@ -109,25 +110,61 @@ public class Interpreter {
 						}
 
 						patternFound = true;
-
 						break;
-					}else{                                                  // the FOR command has several cases, and thus each of them must be able to be constructed
+
+					}else if(key.contains("FOR")) {                            // the FOR command has several cases, and thus each of them must be able to be constructed
 						int counter = matcher.groupCount();
-						if (counter == 4){                                  // if the FOR command is the one with TO FROM and STEP
-							newJavaLine = "for(int " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) +"){";
-						}else{
-							if (counter == 3 && key.contains("STEP")){      // if the FOR command is the one with TO and STEP
-								newJavaLine = "for(int " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) +"){";
-							}else{
-								if (counter == 3 && key.contains("FROM") && !newCyLine.contains("STEP")){ // if the FOR command is the one with TO and FROM
-									newJavaLine = "for(int " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
-								}else{
-									if (counter == 2 && !newCyLine.contains("STEP")){ // if the FOR command is the one with just TO
-										newJavaLine = "for(int " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
-									}
-								}
-							}
+
+						if (counter == 4) {                                  // if the FOR command is the one with TO FROM and STEP
+							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) + "){";
+							patternFound = true;
+							break;
+
+						} else if (counter == 3 && key.contains("STEP")) {      // if the FOR command is the one with TO and STEP
+							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) + "){";
+							patternFound = true;
+							break;
+
+						} else if (counter == 3 && key.contains("FROM") && !newCyLine.contains("STEP")) { // if the FOR command is the one with TO and FROM
+							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
+							patternFound = true;
+							break;
+
+						} else if (counter == 2 && !newCyLine.contains("STEP")) { // if the FOR command is the one with just TO
+							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
+							patternFound = true;
+							break;
 						}
+					}else if (key.startsWith("MIMIC") && !key.contains("END")){ // if the match if for MIMIC (and isn't for MIMICEND) write the necessary things to do the mimic
+						//System.out.println("'" + key + "'");
+						newJavaLine = "targetStart = " + matcher.group(1) +";\n\t\t" +
+								"k++;\n\t\t" +
+								"oldliste.add(new ArrayList<>(liste));\n\t\t" +
+								"tempPointer = new Pointer(gc);\n\t\t" +
+								"tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n\t\t" +
+								"temp.add(tempPointer);\n\t\t" +
+								"targetPointer = new Pointer(gc);\n\t\t" +
+								"targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());\n\t\t" +
+								"target.add(targetPointer);" +
+								"liste.add(temp.get(k));\n\t\t" +
+								"liste.add(target.get(k));\n\t\t" +
+								"for(; " + matcher.group(1) + "Index <2;"+matcher.group(1) + "Index++){\n\t\t\t" +
+								"currentPointer = liste.get(liste.size()-1 -" + matcher.group(1) + "Index);\n\t\t";
+						patternFound = true;
+						break;
+
+					}else if (key.contains("END")) {
+						newJavaLine = "\n\t\t"+ matcher.group(1) +"Index = 0;\n\t\tliste=oldliste.get(oldliste.size() - 1);" +
+								"\n\n\t\toldliste.remove(oldliste.size() - 1);\n";
+						patternFound = true;
+						break;
+
+					}else {
+						newJavaLine = "Pointer "+ matcher.group(1) +" = new Pointer(gc);\n" +
+								"\t\tint " + matcher.group(1) + "Index = 0;";
+						patternFound = true;
+						break;
+					}
 
 						String[] inputs = newCyLine.split(matcher.group(0)); // add what was before and after the key
 						if(inputs.length == 2){
@@ -137,15 +174,13 @@ public class Interpreter {
 						}
 
 
-						patternFound = true;
-
-					}
 
 				}else{
 					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops
 						containsEnd = true;
 					}
 				}
+
 			}
 
 			if (containsEnd){												// if the cyCode lines contained a }, then place it at the end of the java code
@@ -179,16 +214,16 @@ public class Interpreter {
 
 		if (i == 1 && !input.contains("=")){
 			if (function.contains("NUM")){                                    // if a double wasn't initialized, put it to 0
-				input = input + " = 0";
+				input = input + " = 0.0";
 			}
 			if (function.contains("INT")){                                    // if a int wasn't initialized, put it to 0
 				input = input + " = 0";
 			}
 			if (function.contains("STR")){                                    // if a String wasn't initialized, put it to ""
-				input = input + " = 0";
+				input = input + " = \"\"";
 			}
 			if (function.contains("BOOL")){                                   // if a boolean wasn't initialized, put it to false
-				input = input + " = 0";
+				input = input + " = false";
 			}
 		}
 

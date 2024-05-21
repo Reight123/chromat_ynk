@@ -6,16 +6,21 @@ import javafx.scene.paint.Color;
 
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import javafx.animation.TranslateTransition;
+import javafx.util.Duration;
+import javafx.scene.shape.Circle;
+
 
 public class Pointer {
     private double pos_x = 400;
     private double pos_y = 400;
-    private int direction = 90;
+    private double direction = 0.0;
     private boolean is_shown = true;
     private int opacity = 100;
     private int thick = 5;
-
-
+    private int onAction = 0;
+    private boolean animationEnCours = false;
+    private Circle cursor;
 
     private final GraphicsContext gc;
 
@@ -23,8 +28,12 @@ public class Pointer {
 
     public Pointer(GraphicsContext gc) {
         this.gc = gc;
-    }
+        this.cursor = new Circle(pos_x, pos_y, 5, Color.BLACK);
 
+    }
+    public Circle getCursor() {
+        return cursor;
+    }
 
     public double getPos_x() {
         return this.pos_x;
@@ -34,7 +43,7 @@ public class Pointer {
         return this.pos_y;
     }
 
-    public int getDirection() {
+    public double getDirection() {
         return direction;
     }
 
@@ -77,102 +86,58 @@ public class Pointer {
 
     //public Color setColor(int c) {return colors[c];}
 
-
-    public void fwd(int value) {
-
-        System.out.println("Demarrage");
-        //this.gc.setStroke(Color.BLUE);
-        //this.gc.setLineWidth(2);
-        //int value = 100;
-        //direction = cursor.getDirection();
-        //int direction = 2;*
-        double x1 = this.pos_x;
-        double y1 = this.pos_y;
-        double[] pointsX = {x1, x1};
-        double[] pointsY = {y1, y1};
+    public void doodleTracker(double[] pointsX, double[] pointsY, double value, double direction) {
         AnimationTimer timer = new AnimationTimer() {
             int count = 0;
+            double deltaX = Math.cos(direction * Math.PI / 180);
+            double deltaY = Math.sin(direction * Math.PI / 180);
 
-            public void handle(long l) {
+            @Override
+            public void handle(long now) {
+                pointsX[0] = pointsX[1];
+                pointsY[0] = pointsY[1];
                 if (value < 0) {
-                    // gc.setStroke(Color.BLUE);
-                    pointsX[1] -= Math.cos(direction * Math.PI / 180);
-                    pointsY[1] -= Math.sin(direction * Math.PI / 180);
+                    pointsX[1] -= deltaX;
+                    pointsY[1] -= deltaY;
+                } else {
+                    pointsX[1] += deltaX;
+                    pointsY[1] += deltaY;
                 }
-                else {
-                    pointsX[1] += Math.cos(direction * Math.PI / 180);
-                    pointsY[1] += Math.sin(direction * Math.PI / 180);
-                }
+
                 gc.setLineWidth(2);
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
-                //System.out.println(pointsX[1] + "," + pointsY[1]+ ",(" + pointsX[0] + "," + pointsY[0]);
 
                 try {
-                    TimeUnit.MILLISECONDS.sleep(5);
+                    TimeUnit.MILLISECONDS.sleep(0);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
                 count++;
 
                 if (count >= Math.abs(value)) {
+                    onAction = 0;
                     stop();
-                    //System.out.println("Forward fini");
-
                 }
             }
         };
         timer.start();
-        pos_x+=value*Math.cos(direction*Math.PI/180);
-        pos_y+=value*Math.sin(direction*Math.PI/180);
-
     }
-    public void fwd(double value) {
 
-        System.out.println("Demarrage");
-        //this.gc.setStroke(Color.BLUE);
-        //this.gc.setLineWidth(2);
-        //int value = 100;
-        //direction = cursor.getDirection();
-        //int direction = 2;*
+    public void fwd(double value) {
+        //System.out.println("DemarrageD");
+        System.out.println("Position initiale : (" + pos_x + ", " + pos_y + ")");
         double x1 = this.pos_x;
         double y1 = this.pos_y;
         double[] pointsX = {x1, x1};
         double[] pointsY = {y1, y1};
-        AnimationTimer timer = new AnimationTimer() {
-            int count = 0;
+        doodleTracker(pointsX,pointsY,value,direction);
+        //System.out.println("En attente");
 
-            public void handle(long l) {
-                if (value < 0) {
-                    // gc.setStroke(Color.BLUE);
-                    pointsX[1] -= Math.cos(direction * Math.PI / 180);
-                    pointsY[1] -= Math.sin(direction * Math.PI / 180);
-                }
-                else {
-                    pointsX[1] += Math.cos(direction * Math.PI / 180);
-                    pointsY[1] += Math.sin(direction * Math.PI / 180);
-                }
-                gc.setLineWidth(thick);
-                gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
-                //System.out.println(pointsX[1] + "," + pointsY[1]+ ",(" + pointsX[0] + "," + pointsY[0]);
-
-                try {
-                    TimeUnit.MILLISECONDS.sleep(5);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                count++;
-
-                if (count >= Math.abs(value)) {
-                    stop();
-                    //System.out.println("Forward fini");
-
-                }
-            }
-        };
-        timer.start();
-        pos_x+=value*Math.cos(direction*Math.PI/180);
-        pos_y+=value*Math.sin(direction*Math.PI/180);
-
+        pos_x += value * Math.cos(direction * Math.PI / 180);
+        pos_y += value * Math.sin(direction * Math.PI / 180);
+        System.out.println("Position finale : (" + pos_x + ", " + pos_y + ")");
+        //System.out.println("Fin");
+        //System.out.println("valeur onAction f:" + onAction);
     }
     public void bwd(int value){
         fwd(-1*value);
@@ -199,23 +164,19 @@ public class Pointer {
         pos_x=x;
         pos_y=y;
     }
-    public void pos(int x, int y){
-        pos_x=x;
-        pos_y=y;
-    }
-    public void mov(double x, double y){
-        int teta_initial=direction;
-        direction=(int) Math.atan(y/x);
-        fwd(Math.sqrt(y*y+x*x));
-        direction=teta_initial;
-    }
-    public void mov(int x, int y){
-        int teta_initial=direction;
-        direction= (int) Math.atan((double) y /x);
-        fwd(Math.sqrt(y*y+x*x));
-        direction=teta_initial;
+
+    public void move(double x, double y) {
+        double newXpoint = pos_x +x;
+        double newYpoint = pos_y +y;
+        lookat(newXpoint,newYpoint);
+        double distance = Math.sqrt(Math.pow(newXpoint - pos_x, 2) + Math.pow(newYpoint - pos_y, 2));
+        fwd(distance);
     }
 
+
+    public void lookat(double x, double y){
+        direction = Math.toDegrees(Math.atan2(y - pos_y, x - pos_x));
+    }
     public void hide(){
         is_shown = false;
     }
@@ -230,15 +191,21 @@ public class Pointer {
 
     public void setColor(String hexadecimal){}
 
-    public void lookat(int x, int y){
-        lookat((double) x, (double) y);
-    }
-    public void lookat(Pointer pointer){
-        lookat(pointer.getPos_x(), pointer.getPos_y());
-    }
-    public void lookat(double x, double y){}
 
-    /*public void addCouleur(){
+/*
+    public void lookat(Pointer pointer){}
+
+    public int lookat(double x, double y){
+        int teta_initial=direction;
+        direction= (int) Math.atan(y/x);
+        return teta_initial;
+    }
+    public int lookat(int x, int y){
+        int teta_initial=direction;
+        direction= (int) Math.atan(y/x);
+        return teta_initial;
+    }
+    public void addCouleur(){
         int c;
         System.out.println("0) Bleu, 1) Rouge  2) Vert");
         Scanner lectureClavier = new Scanner(System.in);
@@ -246,6 +213,99 @@ public class Pointer {
         c = lectureClavier.nextInt();
         Color color = setColor(c);
         gc.setStroke(color);
-    }*/
+    }
+     public void move(int x, int y){
+        //System.out.println(pos_x + ",z" + pos_y);
+        System.out.println("direction : " + direction);
+        int teta_initial=direction;
+        direction = (int) Math.toDegrees(Math.atan2(y - pos_y, x - pos_x));
+        System.out.println("directionS : " + direction);
+        System.out.println("distance : " + Math.abs(Math.sqrt(y*y+x*x)));
+        fwd(Math.abs(Math.sqrt(y*y+x*x)));
+        direction=teta_initial;
+        System.out.println("direction : " + direction);
+        //System.out.println(pos_x + "," + pos_y);
+      }
+    public void move(int x, int y){
+        int teta_initial=direction;
+        direction=(int) Math.atan(y/x);
+        fwd(Math.sqrt(y*y+x*x));
+        direction=teta_initial;
+    }
+    public void move(double x, double y){
+        int teta_initial=lookat(x,y);
+        fwd(Math.sqrt(y*y+x*x));
+        direction=teta_initial;
+    }
+    public void doodleTracker(double[] pointsX, double[] pointsY, int value, double direction) {
 
+            AnimationTimer timer = new AnimationTimer() {
+                int count = 0;
+                @Override
+                public void handle(long now) {
+                    if (value < 0) {
+                        pointsX[1] -= Math.cos(direction * Math.PI / 180);
+                        pointsY[1] -= Math.sin(direction * Math.PI / 180);
+                    } else {
+                        pointsX[1] += Math.cos(direction * Math.PI / 180);
+                        pointsY[1] += Math.sin(direction * Math.PI / 180);
+                    }
+                    gc.clearRect(cursor.getCenterX() - cursor.getRadius(),
+                            cursor.getCenterY() - cursor.getRadius(),
+                            cursor.getRadius() * 2, cursor.getRadius() * 2);
+                   // gc.clearRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
+                    gc.setLineWidth(2);
+                    gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
+                    cursor.setCenterX(pointsX[1]);
+                    cursor.setCenterY(pointsY[1]);
+
+                    gc.strokeOval(cursor.getCenterX() - cursor.getRadius(),
+                            cursor.getCenterY() - cursor.getRadius(),
+                            cursor.getRadius() * 2, cursor.getRadius() * 2);
+
+
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(0);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    count++;
+
+                    if (count >= Math.abs(value)) {
+                        onAction = 0;
+                        stop();
+                       // System.out.println("FIN fwdI");
+                    }
+                }
+            };
+            timer.start();
+    }
+
+    public void fwd(int value) {
+        System.out.println("Position initiale : (" + pos_x + ", " + pos_y + ")");
+        double x1 = this.pos_x;
+        double y1 = this.pos_y;
+        double[] pointsX = {x1, x1};
+        double[] pointsY = {y1, y1};
+        doodleTracker(pointsX, pointsY, value, direction);
+
+        pos_x += value * Math.cos(direction * Math.PI / 180);
+        pos_y += value * Math.sin(direction * Math.PI / 180);
+
+           TranslateTransition transition = new TranslateTransition(Duration.millis(5000), cursor);
+           transition.setNode(cursor);
+           transition.setToX(pos_x - x1);
+           transition.setToY(pos_y - y1);
+           transition.play();
+
+        System.out.println("Position finale : (" + pos_x + ", " + pos_y + ")");
+}
+   public void move(int x, int y) {
+        double newXpoint = pos_x +x;
+        double newYpoint = pos_y +y;
+        lookat(newXpoint,newYpoint);
+        int distance = (int) Math.sqrt(Math.pow(newXpoint - pos_x, 2) + Math.pow(newYpoint - pos_y, 2));
+        fwd(distance);
+    }
+*/
 }

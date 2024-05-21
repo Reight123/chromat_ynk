@@ -15,6 +15,14 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import javafx.animation.TranslateTransition;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.util.Duration;
+
 public class Main extends Application {
     private Canvas canvas;
 
@@ -40,6 +48,8 @@ public class Main extends Application {
 
         canvas = new Canvas(800, 800);
         GraphicsContext gc = canvas.getGraphicsContext2D();
+        Pointer currentPointer = new Pointer(gc);
+        Pointer updatePointer = new Pointer(gc);
 
         VBox vbox = new VBox();
         vbox.getStylesheets().add(("/style.css"));
@@ -47,12 +57,23 @@ public class Main extends Application {
 
         Scene scene = new Scene(vbox, 800, 870);
 
+        updatePointer = commands(gc);
+        System.out.println(currentPointer);
+
+        //Scene scene = new Scene(root, 800, 850);
+        TranslateTransition transition = new TranslateTransition(Duration.millis(3000), currentPointer.getCursor());
+        transition.setFromX(0);
+        transition.setFromY(0);
+        transition.setToX(updatePointer.getPos_x()-400);
+        transition.setToY(updatePointer.getPos_y()-400);
+        transition.play();
         primaryStage.setScene(scene);
         primaryStage.show();
 
         commands(gc);
 
         addButtons(vbox);
+        // TODO add a button to begin the drawing, and another to delete the drawing and draw it again
     }
 
     private void addButtons(VBox vbox) {
@@ -69,8 +90,24 @@ public class Main extends Application {
         vbox.getChildren().add(buttonBox);
     }
 
-    private void commands(GraphicsContext gc) {
+
+    private Pointer commands(GraphicsContext gc) {
+        List<Pointer> liste = new ArrayList<>();
+        List<List<Pointer>> oldliste = new ArrayList<>();
+        List<Pointer> temp = new ArrayList<>();
+        List<Pointer> target = new ArrayList<>();
+        Pointer tempPointer = null;
+        Pointer targetPointer = null;
+        Pointer targetStart;
+        int k=0;
+        temp.add(tempPointer);
+        target.add(targetPointer);
+
+
         //insertion area do not delete//
+
+
+        return  currentPointer;
     }
 
     private void saveDrawing() {

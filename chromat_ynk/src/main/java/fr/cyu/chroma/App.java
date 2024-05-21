@@ -20,6 +20,8 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class App extends Application {
 
@@ -27,10 +29,10 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = FXCollections.observableArrayList();
     private final ObservableList<Button> addButtons = FXCollections.observableArrayList();
     private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
-    private final ObservableList<String> choices = FXCollections.observableArrayList("FWD", "BWD", "TURNL", "TURNR", "MOV", "POS", "HIDE", "SHOW", "PRESS", "COLOR", "THICK", "LOOKAT", "CURSOR", "SELECT", "REMOVE", "IF", "FOR", "WHILE", "MIMIC", "MIRROR", "NUM", "STR", "BOOL", "DEL", "FinBlock", "FinMIMIC", "FinMIRROR");
+    private final ObservableList<String> choices = FXCollections.observableArrayList( "BOOL","BWD","COLOR", "CURSOR","DEL","ENDBLOCK","MIMICEND","ENDMIRROR", "FOR","FWD","HIDE","IF", "LOOKAT", "MIMIC", "MIRROR", "MOV","NUM", "POS","PRESS","REMOVE","SELECT","SHOW","STR", "THICK","TURNL", "TURNR", "WHILE");
     private final ObservableList<String> error = FXCollections.observableArrayList("Erreur :");
-    private final int drawingWindowWidth = 800;
-    private final int drawingWindowHeight = 800;
+    private int drawingWindowWidth = 800;
+    private int drawingWindowHeight = 800;
 
     @Override
     public void start(Stage primaryStage) {
@@ -197,11 +199,14 @@ public class App extends Application {
                 String selectedOption = choiceBoxes.get(i).getValue();
                 String enteredValue = valueFields.get(i).getText();
                 if (selectedOption != null) {
-                    if (selectedOption.equals("FOR") || selectedOption.equals("IF") || selectedOption.equals("WHILE") || selectedOption.equals("MIMIC") || selectedOption.equals("MIRROR")) {
+                    if (selectedOption.equals("FOR") || selectedOption.equals("IF") || selectedOption.equals("WHILE") || selectedOption.equals("MIMIC")|| selectedOption.equals("MIRROR")) {
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                         bufferedWriter.write("{\n");
-                    } else if (selectedOption.equals("FinBlock")) {
+                    } else if (selectedOption.equals("ENDBLOCK") || selectedOption.equals("ENDMIRROR") ) {
                         bufferedWriter.write("}\n");
+                    } else if (selectedOption.equals("MIMICEND")) {
+                        bufferedWriter.write("}\n");
+                        bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                     } else if (!enteredValue.isEmpty()) {
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                     }
@@ -248,7 +253,8 @@ public class App extends Application {
                         run();
                     }
                 }
-            } catch (Exception e) {
+
+            } catch (Exception e){
                 System.out.println("Error while compiling commands to java: " + e.getMessage());
                 // TODO tell user that operation failed
             }
@@ -256,6 +262,8 @@ public class App extends Application {
             // TODO tell user that operation failed
         }
     }
+
+
 
     private String getFileContent(File selectedFile) {
         String fileContent = "";
@@ -295,7 +303,8 @@ public class App extends Application {
                 new ProcessBuilder("mvn", "-f", pathPlotter, "clean","install", "javafx:run").start();
             }
             // TODO get the output of commands and check if it does not send back errors, and display them if needed
-        } catch (Exception e) {
+
+        }catch (Exception e){
             System.out.println("Error while executing file: " + e.getMessage());
         }
     }

@@ -77,8 +77,7 @@ public class Main extends Application {
         WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
         canvas.snapshot(null, writableImage);
 
-        File file = new File("../../../drawing/Votre_dessin.png");
-        System.out.println(file.exists())
+        File file = new File("./../drawing/Votre_dessin.png");
         try {
             ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
         } catch (IOException e) {

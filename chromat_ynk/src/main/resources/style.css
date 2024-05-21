@@ -1,6 +1,14 @@
-.block-container {
+.box {
     -fx-alignment: top-left;
     -fx-padding: 0px 0px 0px 20px;
+}
+
+.gbox {
+    -fx-background-color: #dedede;
+    -fx-border: solid ;
+    -fx-border-width: 3px;
+    -fx-border-color: grey;
+    -fx-font-size: 14px;
 }
 
 .button {
@@ -12,6 +20,7 @@
     -fx-padding: 10px 20px;
     -fx-font-size: 14px;
     -fx-cursor: pointer;
+    -fx-background-radius: 10px;
 }
 
 .button:hover {
@@ -32,7 +41,7 @@
 }
 
 .choice {
-    -fx-min-width: 150px;
+    -fx-min-width: 170px;
     -fx-min-height: 50px;
     -fx-background-color: #ffc2c2;
     -fx-border: solid ;

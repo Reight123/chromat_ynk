@@ -15,6 +15,11 @@
             <artifactId>javafx-controls</artifactId>
             <version>22</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>19</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

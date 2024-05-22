@@ -2,6 +2,7 @@ package fr.cyu.chroma;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
@@ -23,14 +24,17 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static javafx.collections.FXCollections.observableArrayList;
+
 public class App extends Application {
 
-    private final ObservableList<ChoiceBox<String>> choiceBoxes = FXCollections.observableArrayList();
-    private final ObservableList<TextField> valueFields = FXCollections.observableArrayList();
-    private final ObservableList<Button> addButtons = FXCollections.observableArrayList();
-    private final ObservableList<Button> deleteButtons = FXCollections.observableArrayList();
-    private final ObservableList<String> choices = FXCollections.observableArrayList( "BOOL","BWD","COLOR", "CURSOR","DEL","ENDBLOCK","MIMICEND","ENDMIRROR", "FOR","FWD","HIDE","IF", "LOOKAT", "MIMIC", "MIRROR", "MOV","NUM", "POS","PRESS","REMOVE","SELECT","SHOW","STR", "THICK","TURNL", "TURNR", "WHILE");
-    private final ObservableList<String> error = FXCollections.observableArrayList("Erreur :");
+    private final ObservableList<ChoiceBox<String>> choiceBoxes = observableArrayList();
+    private final ObservableList<TextField> valueFields = observableArrayList();
+    private final ObservableList<Button> addButtons = observableArrayList();
+    private final ObservableList<Button> deleteButtons = observableArrayList();
+    private final ObservableList<String> choices = observableArrayList( "BOOL","BWD","COLOR", "CURSOR","DEL","ENDBLOCK","MIMICEND","ENDMIRROR", "FOR","FWD","HIDE","IF", "LOOKAT", "MIMIC", "MIRROR", "MOV","NUM", "POS","PRESS","REMOVE","SELECT","SHOW","STR", "THICK","TURNL", "TURNR", "WHILE");
+    private final ObservableList<String> error = observableArrayList();
+    private VBox messageBox = new VBox();
     private int drawingWindowWidth = 800;
     private int drawingWindowHeight = 800;
 
@@ -77,25 +81,29 @@ public class App extends Application {
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
 
-        addGreyBox(vbox, error);
+        messageBox = new VBox();
+        messageBox.getStyleClass().add("gbox");
+        messageBox.setPadding(new Insets(10));
+        messageBox.setSpacing(5);
+        vbox.getChildren().add(messageBox);
 
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    private void addGreyBox(VBox vbox, ObservableList<String> items) {
-        VBox greyBox = new VBox();
-        greyBox.getStyleClass().add("gbox");
-        greyBox.setPadding(new Insets(10));
-        greyBox.setSpacing(5);
 
+    private static void updateMessageBox(ObservableList<String> items, VBox messageBox) {
+        messageBox.getChildren().clear();
+        Label label = new Label("Erreur :");
+        messageBox.getChildren().add(label);
         for (String item : items) {
-            Label label = new Label(item);
-            greyBox.getChildren().add(label);
+            label = new Label(item);
+            messageBox.getChildren().add(label);
         }
-
-        vbox.getChildren().add(greyBox);
     }
+
+
+
 
     private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
         int index = choiceBoxes.indexOf(previousChoiceBox) + 1;
@@ -235,6 +243,8 @@ public class App extends Application {
             selectedFile = selectFile();
         }
 
+        messageBox.getChildren().clear(); // delete errors from previous execution
+
         String fileContent = getFileContent(selectedFile);
         String javaCode = "";
 
@@ -250,7 +260,8 @@ public class App extends Application {
                     javaCode = template[0] + javaCode + template[1];
                     writeJavaFile(javaCode);
                     if (!javaCode.isEmpty()) {
-                        run();
+                        Thread thread = new Thread(() -> run(this, messageBox));
+                        thread.start();
                     }
                 }
 
@@ -293,21 +304,56 @@ public class App extends Application {
         }
     }
 
-    private static void run() {
+
+    private static void run(App appInstance, VBox messageBox) {
         try {
             String pathPlotter = "../plotter/pom.xml";
-            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run").start();
+            String osName = System.getProperty("os.name").toLowerCase();
+            ProcessBuilder processBuilder;
+            if (osName.contains("windows")) {
+                processBuilder = new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run");
+            } else if (osName.contains("linux") || osName.contains("mac")) {
+                processBuilder = new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run");
+            } else {
+                Platform.runLater(() -> {
+                    ObservableList<String> unsupportedOsMessage = observableArrayList("OS not supported.");
+                    updateMessageBox(unsupportedOsMessage, messageBox);
+                });
+                return;
             }
-            if (System.getProperty("os.name").toLowerCase().contains("linux")) {
-                new ProcessBuilder("mvn", "-f", pathPlotter, "clean","install", "javafx:run").start();
-            }
-            // TODO get the output of commands and check if it does not send back errors, and display them if needed
 
-        }catch (Exception e){
+            Process process = processBuilder.start();
+
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String error;
+            boolean interestingPart = false;
+            ObservableList<String> errorMessages = observableArrayList();
+            while ((error = stdError.readLine()) != null) {
+                if (error.contains("[Help 1]")) {                // when the error finishes explaining the pb, stop printing it
+                    interestingPart = false;
+                }
+                if (interestingPart) {
+                    if (error.contains("variable currentPointer might not have been initialized")) {    // as this error cannot be understood by the user, write on that can be
+                        errorMessages.add("Call of a function, but no cursor was selected");
+                    } else {
+                        errorMessages.add(error);
+                    }
+                }
+                if (error.contains("Failed to execute goal")) {          // when the error explains what is th pb, start printing it
+                    interestingPart = true;
+                }
+            }
+
+            if (!errorMessages.isEmpty()) {
+                Platform.runLater(() -> appInstance.updateMessageBox(errorMessages, messageBox));
+            }
+
+        } catch (Exception e) {
             System.out.println("Error while executing file: " + e.getMessage());
         }
     }
+
 
     public static void main(String[] args) {
         launch(args);

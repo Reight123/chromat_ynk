@@ -32,7 +32,7 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = observableArrayList();
     private final ObservableList<Button> addButtons = observableArrayList();
     private final ObservableList<Button> deleteButtons = observableArrayList();
-    private final ObservableList<String> choices = observableArrayList( "BOOL","BWD","COLOR", "CURSOR","DEL","ENDBLOCK","MIMICEND","ENDMIRROR", "FOR","FWD","HIDE","IF", "LOOKAT", "MIMIC", "MIRROR", "MOV","NUM", "POS","PRESS","REMOVE","SELECT","SHOW","STR", "THICK","TURNL", "TURNR", "WHILE");
+    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "ENDBLOCK", "ENDMIMIC", "ENDMIRROR", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
     private int drawingWindowWidth = 800;
@@ -40,23 +40,23 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Menu");
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setTitle("Menu"); //set the title of the main window
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds(); //get the dimension of the user screen
 
-        VBox vbox = new VBox();
+        VBox vbox = new VBox(); //content of the main window
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
         vbox.getStylesheets().add(("/style.css"));
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(); //put the vbox with a scrollbar
         scrollPane.setContent(vbox);
         scrollPane.getStylesheets().add(("/style.css"));
 
-        Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight());
+        Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight()); //instance of the content
 
-        addButtons(vbox);
+        addButtons(vbox); //add the button of the menu
 
-        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        ChoiceBox<String> choiceBox = new ChoiceBox<>(); //setup the first command lign
         choiceBox.getStyleClass().add("choice");
         choiceBox.setItems(choices);
         choiceBoxes.add(choiceBox);
@@ -81,14 +81,16 @@ public class App extends Application {
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
 
-        messageBox = new VBox();
+        messageBox = new VBox(); //set the empty error box
         messageBox.getStyleClass().add("gbox");
+        Label label = new Label("Erreur :");
+        messageBox.getChildren().add(label);
         messageBox.setPadding(new Insets(10));
         messageBox.setSpacing(5);
         vbox.getChildren().add(messageBox);
 
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        primaryStage.setScene(scene); // put the content into the stage
+        primaryStage.show(); //show the content
     }
 
 
@@ -101,9 +103,6 @@ public class App extends Application {
             messageBox.getChildren().add(label);
         }
     }
-
-
-
 
     private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
         int index = choiceBoxes.indexOf(previousChoiceBox) + 1;
@@ -146,27 +145,35 @@ public class App extends Application {
     }
 
     private void addButtons(VBox vbox) {
-        Button writeButton = new Button("Enregistrer dans un fichier");
+        Button writeButton = new Button("Enregistrer");
         writeButton.getStyleClass().add("button");
         writeButton.setOnAction(event -> writeCommand());
 
-        Button selectFileButton = new Button("Sélectionner un fichier à exécuter");
+        Button selectFileButton = new Button("Sélectionner un fichier");
         selectFileButton.getStyleClass().add("button");
         selectFileButton.setOnAction(event -> {
             File file = selectFile();
             executeFile(file);
         });
 
-        Button selectThisFileButton = new Button("Exécuter ce fichier");
-        selectThisFileButton.getStyleClass().add("button");
-        selectThisFileButton.setOnAction(event -> {
+        Label executeFile = new Label("\u25B6");
+        executeFile.getStyleClass().add("button");
+        executeFile.setOnMouseClicked(event -> {
             saveToFile(".currentFile");
             File file = new File("./storage/.currentFile.txt");
             executeFile(file);
         });
 
+        Slider slider = new Slider(0, 100, 50);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(25);
+        slider.setMinorTickCount(5);
+        slider.setBlockIncrement(10);
+        slider.getStyleClass().add("slider");
+
         HBox buttonBox = new HBox(10);
-        buttonBox.getChildren().addAll(writeButton, selectFileButton, selectThisFileButton);
+        buttonBox.getChildren().addAll(writeButton, selectFileButton, executeFile, slider);
         vbox.getChildren().add(buttonBox);
     }
 
@@ -212,7 +219,7 @@ public class App extends Application {
                         bufferedWriter.write("{\n");
                     } else if (selectedOption.equals("ENDBLOCK") || selectedOption.equals("ENDMIRROR") ) {
                         bufferedWriter.write("}\n");
-                    } else if (selectedOption.equals("MIMICEND")) {
+                    } else if (selectedOption.equals("ENDMIMIC")) {
                         bufferedWriter.write("}\n");
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                     } else if (!enteredValue.isEmpty()) {

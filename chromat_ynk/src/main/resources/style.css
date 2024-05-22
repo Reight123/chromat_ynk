@@ -4,6 +4,7 @@
 }
 
 .gbox {
+    -fx-max-width: 700px;
     -fx-background-color: #dedede;
     -fx-border: solid ;
     -fx-border-width: 3px;
@@ -12,7 +13,7 @@
 }
 
 .button {
-    -fx-min-width: 280px;
+    -fx-min-width: 180px;
     -fx-background-color: #ed2e2e;
     -fx-border: none;
     -fx-color: white;
@@ -87,4 +88,46 @@
 .thumb:hover {
     -fx-background-color: #b50000;
     -fx-cursor: hand;
+}
+
+.slider .track {
+    -fx-background-color: #E0E0E0;
+    -fx-padding: 0.25em;
+    -fx-background-radius: 0.25em;
+}
+
+.slider .thumb {
+    -fx-background-color: #ed2e2e;
+    -fx-background-insets: 0;
+    -fx-background-radius: 1.5em;
+    -fx-padding: 0.5em;
+}
+
+.slider .tick-mark {
+    -fx-stroke: #ed2e2e;
+}
+
+.slider .increment-button, .slider .decrement-button {
+    -fx-background-color: transparent;
+}
+
+.slider .increment-arrow, .slider .decrement-arrow {
+    -fx-background-color: transparent;
+}
+
+.slider .increment-arrow .arrow, .slider .decrement-arrow .arrow {
+    -fx-background-color: transparent;
+}
+
+.slider .major-tick-mark {
+    -fx-stroke-width: 1.5px;
+}
+
+.slider .minor-tick-mark {
+    -fx-stroke-width: 1px;
+}
+
+.slider .value-label {
+    -fx-text-fill: #0078D7;
+    -fx-font-weight: bold;
 }

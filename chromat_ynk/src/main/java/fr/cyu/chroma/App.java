@@ -83,6 +83,8 @@ public class App extends Application {
 
         messageBox = new VBox();
         messageBox.getStyleClass().add("gbox");
+        Label label = new Label("Erreur :");
+        messageBox.getChildren().add(label);
         messageBox.setPadding(new Insets(10));
         messageBox.setSpacing(5);
         vbox.getChildren().add(messageBox);
@@ -101,9 +103,6 @@ public class App extends Application {
             messageBox.getChildren().add(label);
         }
     }
-
-
-
 
     private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
         int index = choiceBoxes.indexOf(previousChoiceBox) + 1;
@@ -146,27 +145,35 @@ public class App extends Application {
     }
 
     private void addButtons(VBox vbox) {
-        Button writeButton = new Button("Enregistrer dans un fichier");
+        Button writeButton = new Button("Enregistrer");
         writeButton.getStyleClass().add("button");
         writeButton.setOnAction(event -> writeCommand());
 
-        Button selectFileButton = new Button("Sélectionner un fichier à exécuter");
+        Button selectFileButton = new Button("Sélectionner un fichier");
         selectFileButton.getStyleClass().add("button");
         selectFileButton.setOnAction(event -> {
             File file = selectFile();
             executeFile(file);
         });
 
-        Button selectThisFileButton = new Button("Exécuter ce fichier");
-        selectThisFileButton.getStyleClass().add("button");
-        selectThisFileButton.setOnAction(event -> {
+        Label executeFile = new Label("\u25B6"); // Unicode for triangle ▶
+        executeFile.getStyleClass().add("button"); // Apply the same style as a button
+        executeFile.setOnMouseClicked(event -> {
             saveToFile(".currentFile");
             File file = new File("./storage/.currentFile.txt");
             executeFile(file);
         });
 
+        Slider slider = new Slider(0, 100, 50);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(25);
+        slider.setMinorTickCount(5);
+        slider.setBlockIncrement(10);
+        slider.getStyleClass().add("slider");
+
         HBox buttonBox = new HBox(10);
-        buttonBox.getChildren().addAll(writeButton, selectFileButton, selectThisFileButton);
+        buttonBox.getChildren().addAll(writeButton, selectFileButton, executeFile, slider);
         vbox.getChildren().add(buttonBox);
     }
 

@@ -70,6 +70,7 @@ public class Interpreter {
 	public String decode(String cyCode) {
 		String indentation = "\t\t";
 		String javaCode = " Pointer currentPointer;";			// currentPointer must be declared because the user won't do it
+		int preventSELECT = 0;
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
 		cyCode = cyCode.replaceAll("\\}", " }\n");		    	    // skip line after } to prevent have code on the same line after a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));		// separate in a list of lines
@@ -97,20 +98,27 @@ public class Interpreter {
 						containsEnd = true;
 					}
 
-					if (!key.contains("FOR")  && !key.startsWith("MIMIC") /*!(key.contains("MIMIC") && !key.contains("ENDMIMIC"))*/ && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
+					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
 
-						String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
-						int i = 0;
-						String[] template = keywords.get(key);
+						if (!(preventSELECT != 0 && key.contains("SELECT"))) {
+							String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
+							int i = 0;
+							String[] template = keywords.get(key);
 
-						for (String input : inputs) {                       // for each part, put it in the equivalent java line, with the template
-							input = convert(key, i, input);                 // convert percentage to px, and hexa color to rgb
-							newJavaLine += input + " " + template[i] + " ";
-							i++;
+							for (String input : inputs) {                       // for each part, put it in the equivalent java line, with the template
+								input = convert(key, i, input);                 // convert percentage to px, and hexa color to rgb
+								newJavaLine += input + " " + template[i] + " ";
+								i++;
+							}
+
+							patternFound = true;
+							break;
+						}else{
+							System.out.println("SELECT INTERDIT");
+							patternFound = true;
+							break;
+							// TODO exit the program and tell the user the operation is forbidden
 						}
-
-						patternFound = true;
-						break;
 
 					}else if(key.contains("FOR")) {                            // the FOR command has several cases, and thus each of them must be able to be constructed
 						int counter = matcher.groupCount();
@@ -150,12 +158,14 @@ public class Interpreter {
 								"liste.add(target.get(k));\n\t\t" +
 								"for(; " + matcher.group(1) + "Index <2;"+matcher.group(1) + "Index++){\n\t\t\t" +
 								"currentPointer = liste.get(liste.size()-1 -" + matcher.group(1) + "Index);\n\t\t";
+						preventSELECT++;									// increment to know if code is in a mimic loop
 						patternFound = true;
 						break;
 
 					}else if (key.contains("END")) {
 						newJavaLine = "\n\t\t"+ matcher.group(1) +"Index = 0;\n\t\tliste=oldliste.get(oldliste.size() - 1);" +
 								"\n\n\t\toldliste.remove(oldliste.size() - 1);\n";
+						preventSELECT--;									// decrement to know if code is out of a mimic loop
 						patternFound = true;
 						break;
 
@@ -179,6 +189,10 @@ public class Interpreter {
 					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops
 						containsEnd = true;
 					}
+				}
+
+				if(preventSELECT < 0){
+					// TODO tell the user something is wrong, as there is more ending of mimic/mirror than opening
 				}
 
 			}

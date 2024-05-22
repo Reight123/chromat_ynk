@@ -32,7 +32,7 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = observableArrayList();
     private final ObservableList<Button> addButtons = observableArrayList();
     private final ObservableList<Button> deleteButtons = observableArrayList();
-    private final ObservableList<String> choices = observableArrayList( "BOOL","BWD","COLOR", "CURSOR","DEL","ENDBLOCK","MIMICEND","ENDMIRROR", "FOR","FWD","HIDE","IF", "LOOKAT", "MIMIC", "MIRROR", "MOV","NUM", "POS","PRESS","REMOVE","SELECT","SHOW","STR", "THICK","TURNL", "TURNR", "WHILE");
+    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "ENDBLOCK", "ENDMIMIC", "ENDMIRROR", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
     private int drawingWindowWidth = 800;
@@ -40,23 +40,23 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Menu");
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setTitle("Menu"); //set the title of the main window
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds(); //get the dimension of the user screen
 
-        VBox vbox = new VBox();
+        VBox vbox = new VBox(); //content of the main window
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
         vbox.getStylesheets().add(("/style.css"));
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(); //put the vbox with a scrollbar
         scrollPane.setContent(vbox);
         scrollPane.getStylesheets().add(("/style.css"));
 
-        Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight());
+        Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight()); //instance of the content
 
-        addButtons(vbox);
+        addButtons(vbox); //add the button of the menu
 
-        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        ChoiceBox<String> choiceBox = new ChoiceBox<>(); //setup the first command lign
         choiceBox.getStyleClass().add("choice");
         choiceBox.setItems(choices);
         choiceBoxes.add(choiceBox);
@@ -81,7 +81,7 @@ public class App extends Application {
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
 
-        messageBox = new VBox();
+        messageBox = new VBox(); //set the empty error box
         messageBox.getStyleClass().add("gbox");
         Label label = new Label("Erreur :");
         messageBox.getChildren().add(label);
@@ -89,8 +89,8 @@ public class App extends Application {
         messageBox.setSpacing(5);
         vbox.getChildren().add(messageBox);
 
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        primaryStage.setScene(scene); // put the content into the stage
+        primaryStage.show(); //show the content
     }
 
 
@@ -156,8 +156,8 @@ public class App extends Application {
             executeFile(file);
         });
 
-        Label executeFile = new Label("\u25B6"); // Unicode for triangle ▶
-        executeFile.getStyleClass().add("button"); // Apply the same style as a button
+        Label executeFile = new Label("\u25B6");
+        executeFile.getStyleClass().add("button");
         executeFile.setOnMouseClicked(event -> {
             saveToFile(".currentFile");
             File file = new File("./storage/.currentFile.txt");
@@ -219,7 +219,7 @@ public class App extends Application {
                         bufferedWriter.write("{\n");
                     } else if (selectedOption.equals("ENDBLOCK") || selectedOption.equals("ENDMIRROR") ) {
                         bufferedWriter.write("}\n");
-                    } else if (selectedOption.equals("MIMICEND")) {
+                    } else if (selectedOption.equals("ENDMIMIC")) {
                         bufferedWriter.write("}\n");
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                     } else if (!enteredValue.isEmpty()) {

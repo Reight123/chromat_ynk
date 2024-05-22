@@ -105,36 +105,31 @@ public class Main extends Application {
 
 
          Pointer currentPointer;
-Pointer c1 = new Pointer(gc);
-		int c1Index = 0;
-		 currentPointer = c1 ; 
-		 currentPointer.pos( 300,300 ); 
-Pointer c2 = new Pointer(gc);
-		int c2Index = 0;
-		 currentPointer = c2 ; 
-targetStart = c1;
-		k++;
-		oldliste.add(new ArrayList<>(liste));
-		tempPointer = new Pointer(gc);
-		tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
-		temp.add(tempPointer);
-		targetPointer = new Pointer(gc);
-		targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());
-		target.add(targetPointer);liste.add(temp.get(k));
-		liste.add(target.get(k));
-		for(; c1Index <2;c1Index++){
-			currentPointer = liste.get(liste.size()-1 -c1Index);
+Pointer cursor1 = new Pointer(gc);
+		int cursor1Index = 0;
+		currentPointer = cursor1;
+		 currentPointer.turnRight( 40 ); 
+		 currentPointer.fwd( 100 ); 
+		 currentPointer.turnRight( 10 ); 
+		 currentPointer.fwd( 40 ); 
+		for(double i=0; i<=19; i++){
 		
-		
-		 currentPointer.fwd( 50 ); 
+		 currentPointer.turnRight( 10 ); 
+		 currentPointer.fwd( 10 ); 
 		  }
 		
-
-		c1Index = 0;
-		liste=oldliste.get(oldliste.size() - 1);
-
-		oldliste.remove(oldliste.size() - 1);
-
+		 currentPointer.pos( 400,400 ); 
+		 currentPointer.turnLeft( 110 ); 
+		 currentPointer.fwd( 100 ); 
+		 currentPointer.turnLeft( 10 ); 
+		 currentPointer.fwd( 40 ); 
+		for(double j=0; j<=19; j++){
+		
+		 currentPointer.turnLeft( 10 ); 
+		 currentPointer.fwd( 10 ); 
+		  }
+		
+		 currentPointer.pos( 500,500 ); 
 
 
         return  currentPointer;

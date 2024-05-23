@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -37,10 +38,14 @@ public class App extends Application {
     private VBox messageBox = new VBox();
     private int drawingWindowWidth = 800;
     private int drawingWindowHeight = 800;
+    private double sliderValue = 50;
+    private boolean errorGestion = false;
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Menu"); //set the title of the main window
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds(); //get the dimension of the user screen
 
         VBox vbox = new VBox(); //content of the main window
@@ -99,10 +104,25 @@ public class App extends Application {
         Label label = new Label("Erreur :");
         messageBox.getChildren().add(label);
         for (String item : items) {
-            label = new Label(item);
+            if (item.length() > 97) {
+                StringBuilder wrappedItem = new StringBuilder();
+                int startIndex = 0;
+                int endIndex = Math.min(97, item.length());
+                while (startIndex < item.length()) {
+                    wrappedItem.append(item.substring(startIndex, endIndex));
+                    wrappedItem.append("\n\t");
+                    startIndex = endIndex;
+                    endIndex = Math.min(startIndex + 97, item.length());
+                }
+                label = new Label(wrappedItem.toString());
+            } else {
+                label = new Label(item);
+            }
+            label.setWrapText(true);
             messageBox.getChildren().add(label);
         }
     }
+
 
     private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
         int index = choiceBoxes.indexOf(previousChoiceBox) + 1;
@@ -157,7 +177,7 @@ public class App extends Application {
         });
 
         Label executeFile = new Label("\u25B6");
-        executeFile.getStyleClass().add("button");
+        executeFile.getStyleClass().add("sbutton");
         executeFile.setOnMouseClicked(event -> {
             saveToFile(".currentFile");
             File file = new File("./storage/.currentFile.txt");
@@ -171,9 +191,26 @@ public class App extends Application {
         slider.setMinorTickCount(5);
         slider.setBlockIncrement(10);
         slider.getStyleClass().add("slider");
+        slider.setOnMouseReleased(event -> {
+            sliderValue = slider.getValue();
+        });
+
+        ToggleButton  selecterror= new ToggleButton("Gestion Erreur");
+        selecterror.getStyleClass().add("button");
+        selecterror.setOnAction(event -> {
+            if (selecterror.isSelected()) {
+                selecterror.setText("Arret si Erreur");
+                errorGestion = false;
+                System.out.println(errorGestion);
+            } else {
+                selecterror.setText("Erreurs ignorés");
+                errorGestion = true;
+                System.out.println(errorGestion);
+            }
+        });
 
         HBox buttonBox = new HBox(10);
-        buttonBox.getChildren().addAll(writeButton, selectFileButton, executeFile, slider);
+        buttonBox.getChildren().addAll(writeButton, selectFileButton, slider, selecterror, executeFile);
         vbox.getChildren().add(buttonBox);
     }
 
@@ -250,7 +287,7 @@ public class App extends Application {
             selectedFile = selectFile();
         }
 
-        messageBox.getChildren().clear(); // delete errors from previous execution
+        updateMessageBox(error, messageBox); // delete errors from previous execution
 
         String fileContent = getFileContent(selectedFile);
         String javaCode = "";

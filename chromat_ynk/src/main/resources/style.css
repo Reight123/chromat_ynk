@@ -4,7 +4,6 @@
 }
 
 .gbox {
-    -fx-max-width: 700px;
     -fx-background-color: #dedede;
     -fx-border: solid ;
     -fx-border-width: 3px;
@@ -13,7 +12,7 @@
 }
 
 .button {
-    -fx-min-width: 180px;
+    -fx-min-width: 160px;
     -fx-background-color: #ed2e2e;
     -fx-border: none;
     -fx-color: white;
@@ -25,6 +24,23 @@
 }
 
 .button:hover {
+    -fx-background-color: #b50000;
+    -fx-cursor: hand;
+}
+
+.sbutton {
+    -fx-min-width: 50px;
+    -fx-background-color: #ed2e2e;
+    -fx-border: none;
+    -fx-color: white;
+    -fx-text-fill: white;
+    -fx-padding: 10px 25px;
+    -fx-font-size: 14px;
+    -fx-cursor: pointer;
+    -fx-background-radius: 10px;
+}
+
+.sbutton:hover {
     -fx-background-color: #b50000;
     -fx-cursor: hand;
 }
@@ -97,6 +113,7 @@
 }
 
 .slider .thumb {
+    -fx-shape: "M 10 10 L 20 20 L 10 30 Z M 20 10 L 30 20 L 20 30 Z";
     -fx-background-color: #ed2e2e;
     -fx-background-insets: 0;
     -fx-background-radius: 1.5em;
@@ -127,7 +144,4 @@
     -fx-stroke-width: 1px;
 }
 
-.slider .value-label {
-    -fx-text-fill: #0078D7;
-    -fx-font-weight: bold;
-}
+

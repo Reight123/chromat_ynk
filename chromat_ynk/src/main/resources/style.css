@@ -4,7 +4,6 @@
 }
 
 .gbox {
-    -fx-max-width: 700px;
     -fx-background-color: #dedede;
     -fx-border: solid ;
     -fx-border-width: 3px;

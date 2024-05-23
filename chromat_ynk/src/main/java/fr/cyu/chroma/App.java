@@ -102,10 +102,25 @@ public class App extends Application {
         Label label = new Label("Erreur :");
         messageBox.getChildren().add(label);
         for (String item : items) {
-            label = new Label(item);
+            if (item.length() > 97) {
+                StringBuilder wrappedItem = new StringBuilder();
+                int startIndex = 0;
+                int endIndex = Math.min(97, item.length());
+                while (startIndex < item.length()) {
+                    wrappedItem.append(item.substring(startIndex, endIndex));
+                    wrappedItem.append("\n\t");
+                    startIndex = endIndex;
+                    endIndex = Math.min(startIndex + 97, item.length());
+                }
+                label = new Label(wrappedItem.toString());
+            } else {
+                label = new Label(item);
+            }
+            label.setWrapText(true);
             messageBox.getChildren().add(label);
         }
     }
+
 
     private void addNewBlockAfter(VBox vbox, ChoiceBox<String> previousChoiceBox) {
         int index = choiceBoxes.indexOf(previousChoiceBox) + 1;

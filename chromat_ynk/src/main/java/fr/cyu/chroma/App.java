@@ -33,7 +33,6 @@ public class App extends Application {
     private final ObservableList<Button> addButtons = observableArrayList();
     private final ObservableList<Button> deleteButtons = observableArrayList();
     private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "ENDBLOCK", "ENDMIMIC", "ENDMIRROR", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
-    private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
     private int drawingWindowWidth = 800;
     private int drawingWindowHeight = 800;
@@ -258,26 +257,36 @@ public class App extends Application {
         if (!fileContent.isEmpty()) {
             try {
                 Interpreter interpreter = new Interpreter(this.drawingWindowWidth, this.drawingWindowHeight);
-                javaCode = interpreter.decode(fileContent);
+                javaCode = interpreter.decode(fileContent, false);
                 File templateFile = new File("../plotter/src/main/template/templateMain.java");
                 String temp = getFileContent(templateFile);
-                String[] template = temp.split("//insertion area do not delete//");
+                String[] template;
+                if(temp.contains("//insertion area do not delete//")) {
+                    template = temp.split("//insertion area do not delete//");
+                } else {
+                    updateMessageBox(observableArrayList("source file plotter/src/main/template/templateMain.java does not contains insertion area"), messageBox);
+                    System.out.println("error while executing file : source file plotter/src/main/template/templateMain.java does not contains insertion area");
+                    return;
+                }
 
-                if (template.length == 2 && !temp.isEmpty()) {
+
+                if (template.length == 2 && !javaCode.isEmpty()) {
                     javaCode = template[0] + javaCode + template[1];
                     writeJavaFile(javaCode);
-                    if (!javaCode.isEmpty()) {
-                        Thread thread = new Thread(() -> run(this, messageBox));
-                        thread.start();
-                    }
+                    Thread thread = new Thread(() -> run(this, messageBox));
+                    thread.start();
+                } else {
+                    updateMessageBox(observableArrayList("source file plotter/src/main/template/templateMain.java is missing parts"), messageBox);
+                    System.out.println("source file plotter/src/main/template/templateMain.java is missing parts");
                 }
 
             } catch (Exception e){
-                System.out.println("Error while compiling commands to java: " + e.getMessage());
-                // TODO tell user that operation failed
+                updateMessageBox(observableArrayList(e.getMessage()), messageBox);
+                System.out.println("error while executing : " + e.getMessage());
             }
         } else {
-            // TODO tell user that operation failed
+            updateMessageBox(observableArrayList("Selected file " + selectedFile.toString() + " is empty"), messageBox);
+            System.out.println("error while executing : Selected file " + selectedFile.toString() + " is empty");
         }
     }
 
@@ -294,11 +303,13 @@ public class App extends Application {
                 }
                 fileContent = content.toString();
             } catch (IOException e) {
+                updateMessageBox(observableArrayList("Error while reading file: " + e.getMessage()), messageBox);
                 System.out.println("Error while reading file: " + e.getMessage());
             }
             return fileContent;
         } else {
-            System.out.println("Error while reading file: " + "null File");
+            updateMessageBox(observableArrayList("Error while reading file: file \"null\" does not exist"), messageBox);
+            System.out.println("Error while reading file: file \"null\" does not exist");
             return "";
         }
     }
@@ -307,7 +318,8 @@ public class App extends Application {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("../plotter/src/main/java/fr/cyu/chroma/Main.java"))) {
             writer.write(fileContent);
         } catch (IOException e) {
-            e.printStackTrace();
+            updateMessageBox(observableArrayList("Error while writing file Main.java : " + e.getMessage()), messageBox);
+            System.out.println("Error while writing file Main.java : " + e.getMessage());
         }
     }
 
@@ -323,8 +335,7 @@ public class App extends Application {
                 processBuilder = new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run");
             } else {
                 Platform.runLater(() -> {
-                    ObservableList<String> unsupportedOsMessage = observableArrayList("OS not supported.");
-                    updateMessageBox(unsupportedOsMessage, messageBox);
+                    updateMessageBox(observableArrayList("OS " + osName + " is not supported."), messageBox);
                 });
                 return;
             }
@@ -357,6 +368,7 @@ public class App extends Application {
             }
 
         } catch (Exception e) {
+            updateMessageBox(observableArrayList("Error while executing file: " + e.getMessage()), messageBox);
             System.out.println("Error while executing file: " + e.getMessage());
         }
     }

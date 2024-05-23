@@ -105,31 +105,10 @@ public class Main extends Application {
 
 
          Pointer currentPointer;
-Pointer cursor1 = new Pointer(gc);
-		int cursor1Index = 0;
-		currentPointer = cursor1;
-		 currentPointer.turnRight( 40 ); 
-		 currentPointer.fwd( 100 ); 
-		 currentPointer.turnRight( 10 ); 
-		 currentPointer.fwd( 40 ); 
-		for(double i=0; i<=19; i++){
-		
-		 currentPointer.turnRight( 10 ); 
+Pointer c1 = new Pointer(gc);
+		int c1Index = 0;
+        currentPointer = c1;
 		 currentPointer.fwd( 10 ); 
-		  }
-		
-		 currentPointer.pos( 400,400 ); 
-		 currentPointer.turnLeft( 110 ); 
-		 currentPointer.fwd( 100 ); 
-		 currentPointer.turnLeft( 10 ); 
-		 currentPointer.fwd( 40 ); 
-		for(double j=0; j<=19; j++){
-		
-		 currentPointer.turnLeft( 10 ); 
-		 currentPointer.fwd( 10 ); 
-		  }
-		
-		 currentPointer.pos( 500,500 ); 
 
 
         return  currentPointer;

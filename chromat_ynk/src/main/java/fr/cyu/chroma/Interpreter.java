@@ -67,7 +67,7 @@ public class Interpreter {
 	 * @param cyCode pseudocode written by the user
 	 * @return String java code equivalent of cyCode
 	 */
-	public String decode(String cyCode) {
+	public String decode(String cyCode, boolean ignoreError) throws InterpreterException {
 		String indentation = "\t\t";
 		String javaCode = " Pointer currentPointer;";			// currentPointer must be declared because the user won't do it
 		int preventSELECT = 0;
@@ -78,6 +78,7 @@ public class Interpreter {
 		for (String cyLine : cyLines) {
 			String newCyLine = "";
 			String newJavaLine = indentation;
+			boolean doUnknownCommands = false;
 			boolean patternFound = false;
 			boolean containsEnd = false;
 			int indexComment = cyLine.indexOf("//");						// look for comment in the code and get everything but it, so it doesn't affect the java code
@@ -106,7 +107,7 @@ public class Interpreter {
 							String[] template = keywords.get(key);
 
 							for (String input : inputs) {                       // for each part, put it in the equivalent java line, with the template
-								input = convert(key, i, input);                 // convert percentage to px, and hexa color to rgb
+								input = convert(key, i, input, ignoreError);                 // convert percentage to px, and hexa color to rgb
 								newJavaLine += input + " " + template[i] + " ";
 								i++;
 							}
@@ -114,64 +115,66 @@ public class Interpreter {
 							patternFound = true;
 							break;
 						}else{
-							System.out.println("SELECT INTERDIT");
+							if (!ignoreError) {
+								throw new InterpreterException("Usage of select is restricted inside mimic and mirror loop");
+							}
 							patternFound = true;
 							break;
-							// TODO exit the program and tell the user the operation is forbidden
 						}
 
 					}else if(key.contains("FOR")) {                            // the FOR command has several cases, and thus each of them must be able to be constructed
 						int counter = matcher.groupCount();
 
 						if (counter == 4) {                                  // if the FOR command is the one with TO FROM and STEP
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) + "){";
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) + "){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 3 && key.contains("STEP")) {      // if the FOR command is the one with TO and STEP
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) + "){";
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) + "){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 3 && key.contains("FROM") && !newCyLine.contains("STEP")) { // if the FOR command is the one with TO and FROM
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 2 && !newCyLine.contains("STEP")) { // if the FOR command is the one with just TO
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
 							patternFound = true;
 							break;
 						}
+
 					}else if (key.startsWith("MIMIC") && !key.contains("END")){ // if the match if for MIMIC (and isn't for MIMICEND) write the necessary things to do the mimic
 						//System.out.println("'" + key + "'");
-						newJavaLine = "targetStart = " + matcher.group(1) +";\n\t\t" +
-								"k++;\n\t\t" +
-								"oldliste.add(new ArrayList<>(liste));\n\t\t" +
-								"tempPointer = new Pointer(gc);\n\t\t" +
-								"tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n\t\t" +
-								"temp.add(tempPointer);\n\t\t" +
-								"targetPointer = new Pointer(gc);\n\t\t" +
-								"targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());\n\t\t" +
+						newJavaLine = "targetStart = " + matcher.group(1) +";\n" + indentation +
+								"k++;\n" + indentation +
+								"oldliste.add(new ArrayList<>(liste));\n" + indentation +
+								"tempPointer = new Pointer(gc);\n" + indentation +
+								"tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n" + indentation +
+								"temp.add(tempPointer);\n" + indentation +
+								"targetPointer = new Pointer(gc);\n" + indentation +
+								"targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());\n" + indentation +
 								"target.add(targetPointer);" +
-								"liste.add(temp.get(k));\n\t\t" +
-								"liste.add(target.get(k));\n\t\t" +
-								"for(; " + matcher.group(1) + "Index <2;"+matcher.group(1) + "Index++){\n\t\t\t" +
-								"currentPointer = liste.get(liste.size()-1 -" + matcher.group(1) + "Index);\n\t\t";
+								"liste.add(temp.get(k));\n" + indentation +
+								"liste.add(target.get(k));\n" + indentation +
+								"for(; " + matcher.group(1) + "Index <2;"+matcher.group(1) + "Index++){\n\t" + indentation +
+								"currentPointer = liste.get(liste.size()-1 -" + matcher.group(1) + "Index);\n" + indentation;
 						preventSELECT++;									// increment to know if code is in a mimic loop
 						patternFound = true;
 						break;
 
 					}else if (key.contains("END")) {
-						newJavaLine = "\n\t\t"+ matcher.group(1) +"Index = 0;\n\t\tliste=oldliste.get(oldliste.size() - 1);" +
-								"\n\n\t\toldliste.remove(oldliste.size() - 1);\n";
+						newJavaLine = "\n" + indentation + matcher.group(1) +"Index = 0;\n" + indentation + "=oldliste.get(oldliste.size() - 1);" +
+								"\n\n" + indentation + "oldliste.remove(oldliste.size() - 1);\n";
 						preventSELECT--;									// decrement to know if code is out of a mimic loop
 						patternFound = true;
 						break;
 
 					}else {
-						newJavaLine = "Pointer "+ matcher.group(1) +" = new Pointer(gc);\n" +
-								"\t\tint " + matcher.group(1) + "Index = 0;";
+						newJavaLine = indentation + "Pointer "+ matcher.group(1) +" = new Pointer(gc);\n" +
+								indentation + "int " + matcher.group(1) + "Index = 0;";
 						patternFound = true;
 						break;
 					}
@@ -192,7 +195,9 @@ public class Interpreter {
 				}
 
 				if(preventSELECT < 0){
-					// TODO tell the user something is wrong, as there is more ending of mimic/mirror than opening
+					if (!ignoreError) {
+						throw new InterpreterException("missing end of loop after mimic or mirror"); // throw an error to tell the user that there is more start of mimic and mirror than end
+					}
 				}
 
 			}
@@ -205,11 +210,24 @@ public class Interpreter {
 				}
 			}else{
 				if(!patternFound && !newCyLine.matches("[ \t]*")){	// if no pattern are found and the line contains other things that space or tabulation
-					newJavaLine = indentation + " " + newCyLine + ";";
+					if (!ignoreError) {
+						throw new InterpreterException("Unknown instruction : " + newCyLine);
+					} else {
+						if (doUnknownCommands) {
+							newJavaLine = indentation + " " + newCyLine + ";";
+						}
+					}
 				}
 			}
 
 			javaCode += "\n" + newJavaLine;									// add the new line to the java code
+
+		}
+
+		if(preventSELECT != 0){
+			if (!ignoreError) {
+				throw new InterpreterException("the number of end of mimic or mirror doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of mimic and mirror than end
+			}
 		}
 
 		return javaCode;
@@ -224,7 +242,7 @@ public class Interpreter {
 	 * @param input parameter of the function
 	 * @return the input with the parameter(s) converted from %age if needed, the undefined variable set to 0/empty_String/false, the parameter as a String for the COLOR function if it's a hexadecimal code
 	 */
-	private String convert(String function, int i, String input){
+	private String convert(String function, int i, String input, boolean ignoreError) throws InterpreterException{
 
 		if (i == 1 && !input.contains("=")){
 			if (function.contains("NUM")){                                    // if a double wasn't initialized, put it to 0
@@ -247,7 +265,7 @@ public class Interpreter {
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input);                     // look for the pattern in the string
 
-				while (matcher.find()) {
+				while (matcher.find()) {									// while there is another % in the line
 					String[] str = input.split(matcher.group(0), 2);    	// split the string just for the first occurrence
 					if (str.length == 2){									// if the pattern is included in the input
 						input = str[0] + "(int) (" + matcher.group(1) + "*(" + this.maxWindowWidth + "/100))" + str[1];
@@ -256,13 +274,17 @@ public class Interpreter {
 					}
 					matcher = regex.matcher(input);                         // look fot another match in the input
 				}
-			}else {                                                         // if the command is PRESS, then the percentage does not depend on the window size, it just needs to be divided by 100
+			} else {                                                         // if the command is PRESS, then the percentage does not depend on the window size, it just needs to be divided by 100
 				String pattern = "(\\w+\\.?\\d*)\\s*%";
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input);
 
 				if (matcher.find()) {
 					input = input.replaceAll(matcher.group(0), "(double) (" + matcher.group(1) + "/100)");   // replace it in the string
+				} else {
+					if (!ignoreError) {
+						throw new InterpreterException("unrecognized pattern in function PRESS with a percentage");
+					}
 				}
 			}
 		}

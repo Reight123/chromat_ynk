@@ -256,7 +256,7 @@ public class App extends Application {
             selectedFile = selectFile();
         }
 
-        messageBox.getChildren().clear(); // delete errors from previous execution
+        updateMessageBox(error, messageBox); // delete errors from previous execution
 
         String fileContent = getFileContent(selectedFile);
         String javaCode = "";

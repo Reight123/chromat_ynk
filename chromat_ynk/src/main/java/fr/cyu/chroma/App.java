@@ -37,6 +37,7 @@ public class App extends Application {
     private VBox messageBox = new VBox();
     private int drawingWindowWidth = 800;
     private int drawingWindowHeight = 800;
+    private double sliderValue = 50;
 
     @Override
     public void start(Stage primaryStage) {
@@ -171,6 +172,9 @@ public class App extends Application {
         slider.setMinorTickCount(5);
         slider.setBlockIncrement(10);
         slider.getStyleClass().add("slider");
+        slider.setOnMouseReleased(event -> {
+            sliderValue = slider.getValue();
+        });
 
         HBox buttonBox = new HBox(10);
         buttonBox.getChildren().addAll(writeButton, selectFileButton, executeFile, slider);

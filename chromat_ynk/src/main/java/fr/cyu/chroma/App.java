@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -42,6 +43,7 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Menu"); //set the title of the main window
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds(); //get the dimension of the user screen
 
         VBox vbox = new VBox(); //content of the main window

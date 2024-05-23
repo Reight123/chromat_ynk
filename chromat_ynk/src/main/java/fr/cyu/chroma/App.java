@@ -39,11 +39,13 @@ public class App extends Application {
     private int drawingWindowWidth = 800;
     private int drawingWindowHeight = 800;
     private double sliderValue = 50;
+    private boolean errorGestion = false;
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Menu"); //set the title of the main window
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds(); //get the dimension of the user screen
 
         VBox vbox = new VBox(); //content of the main window
@@ -175,7 +177,7 @@ public class App extends Application {
         });
 
         Label executeFile = new Label("\u25B6");
-        executeFile.getStyleClass().add("button");
+        executeFile.getStyleClass().add("sbutton");
         executeFile.setOnMouseClicked(event -> {
             saveToFile(".currentFile");
             File file = new File("./storage/.currentFile.txt");
@@ -193,8 +195,22 @@ public class App extends Application {
             sliderValue = slider.getValue();
         });
 
+        ToggleButton  selecterror= new ToggleButton("Gestion Erreur");
+        selecterror.getStyleClass().add("button");
+        selecterror.setOnAction(event -> {
+            if (selecterror.isSelected()) {
+                selecterror.setText("Arret si Erreur");
+                errorGestion = false;
+                System.out.println(errorGestion);
+            } else {
+                selecterror.setText("Erreurs ignorés");
+                errorGestion = true;
+                System.out.println(errorGestion);
+            }
+        });
+
         HBox buttonBox = new HBox(10);
-        buttonBox.getChildren().addAll(writeButton, selectFileButton, executeFile, slider);
+        buttonBox.getChildren().addAll(writeButton, selectFileButton, slider, selecterror, executeFile);
         vbox.getChildren().add(buttonBox);
     }
 

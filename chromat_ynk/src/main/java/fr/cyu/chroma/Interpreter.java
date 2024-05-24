@@ -370,19 +370,19 @@ public class Interpreter {
 
 		if (function.contains("COLOR")) {
 			if (input.contains("#")){
-				input = "\"" + input + "\"";								// if the color command have a hexadecimal parameter, put it as a String
 				String pattern = "\\s*(#[0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F])\\s*"; // check that the hexadecimal code has the correct format
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input.toUpperCase());
 				if (matcher.find()) {
-					input = matcher.group(1); 								// remove the spaces or tabulations
+					input = "\"" + matcher.group(1) + "\""; 				// remove the spaces or tabulations and put it as a String
 				} else {
 					if (!ignoreError) {
 						throw new IllegalArgumentException("unrecognized pattern in function COLOR with a # without a hexadecimal code : " + input); // if the errors aren't ignored, throw an error
 					}
+					input = "\"" + input + "\""; 							// else, put is as a string and let the try catch handle the error
 				}
 			} else {
-				String pattern = "\\s*([A-Za-z]+)\\s*";                        // check if the input is the name of a colour
+				String pattern = "\\s*([A-Za-z]+)\\s*";						// check if the input is the name of a colour
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input.toUpperCase());
 				if (matcher.find()) {
@@ -390,6 +390,8 @@ public class Interpreter {
 						input = "Color." + matcher.group(1);				// if so then write the constant corresponding to teh colour
 					} else if (!ignoreError) {								// if there is only one argument, then there is an error
 						throw new IllegalArgumentException("unrecognized argument in function COLOR : " + input);
+					} else {
+						input = "-1,-1,-1"; 								// else put something that can be handled by the try catch
 					}
 				}
 			}

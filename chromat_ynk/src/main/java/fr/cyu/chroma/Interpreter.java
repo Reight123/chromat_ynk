@@ -73,7 +73,8 @@ public class Interpreter {
 		String javaCode = " Pointer currentPointer";						// currentPointer must be declared because the user won't do it
 		if (ignoreError){javaCode+=" = null;";}else{javaCode+=";";}			// if the instruction will be surrounded by try catch, add "= null" to detect the error, if not don't add it, or it will crash
 		int preventSELECT = 0;
-		int countEnd = 0;
+		String removed = "";
+		List<String> functionPile = new ArrayList<>();
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
 		cyCode = cyCode.replaceAll("\\}", "\n" + indentation + "}\n");		// skip line next to } to prevent having code on the same line as a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));			// separate in a list of lines
@@ -97,11 +98,19 @@ public class Interpreter {
 				Matcher matcher = pattern.matcher(newCyLine);				// for each keyword, check if one match the line
 				if (matcher.find()) {
 
-					if(key.contains("FOR") || key.contains("WHILE") || key.contains("IF")){
-						countEnd++;
-					}
-
 					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
+						if (key.contains("WHILE")){
+							functionPile.add("WHILE");
+							if (ignoreError){
+								newJavaLine += "try{\n" + indentation;
+							}
+						}
+						if (key.contains("IF")){
+							functionPile.add("IF");
+							if (ignoreError){
+								newJavaLine += "try{\n" + indentation;
+							}
+						}
 
 						if (!(preventSELECT != 0 && key.contains("SELECT"))) {
 							String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
@@ -128,31 +137,58 @@ public class Interpreter {
 					}else if(key.contains("FOR")) {                           	// the FOR command has several cases, and thus each of them must be able to be constructed
 						int counter = matcher.groupCount();
 						key2 = key;
-
 						if (counter == 4) {                                  	// if the FOR command is the one with TO FROM and STEP
-							newJavaLine = indentation + "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) + "){";
+							if (ignoreError){
+								newJavaLine = indentation + "try{\n" + indentation;
+							} else {
+								newJavaLine = indentation;
+							}
+							functionPile.add("FOR");
+							newJavaLine += "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) + "){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 3 && key.contains("STEP")) {      // if the FOR command is the one with TO and STEP
-							newJavaLine = indentation + "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) + "){";
+							if (ignoreError){
+								newJavaLine = indentation + "try{\n" + indentation;
+							} else {
+								newJavaLine = indentation;
+							}
+							functionPile.add("FOR");
+							newJavaLine += "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) + "){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 3 && key.contains("FROM") && !newCyLine.contains("STEP")) { // if the FOR command is the one with TO and FROM
-							newJavaLine = indentation + "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
+							if (ignoreError){
+								newJavaLine = indentation + "try{\n" + indentation;
+							} else {
+								newJavaLine = indentation;
+							}
+							functionPile.add("FOR");
+							newJavaLine += "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 2 && !newCyLine.contains("STEP")) { // if the FOR command is the one with just TO
-							newJavaLine = indentation + "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
+							if (ignoreError){
+								newJavaLine = indentation + "try{\n" + indentation;
+							} else {
+								newJavaLine = indentation;
+							}
+							functionPile.add("FOR");
+							newJavaLine += "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
 							patternFound = true;
 							break;
 						}
 
 					}else if (key.startsWith("MIMIC") && !key.contains("END")){ // if the match if for MIMIC (and isn't for MIMICEND) write the necessary things to do the mimic
 						key2 = key;
-						newJavaLine = "targetStart = " + matcher.group(1) +";\n" + indentation +
+						functionPile.add("MIMIC");
+						if (ignoreError){
+							newJavaLine = indentation + "try{\n" + indentation; // if error must be ignored, add try at start of the function
+						}
+						newJavaLine += "targetStart = " + matcher.group(1) +";\n" + indentation +
 								"k++;\n" + indentation +
 								"oldliste.add(new ArrayList<>(liste));\n" + indentation +
 								"tempPointer = new Pointer(gc);\n" + indentation +
@@ -170,11 +206,18 @@ public class Interpreter {
 						break;
 
 					}else if (key.contains("END")) {
+						if (!removed.equals("MIMIC") && !ignoreError) {
+							throw new IllegalStateException("Closing MIMIC but function " + removed + " is still opened"); // throw an error to tell the user that there is something wrong
+						}
+
 						key2 = key;
-						newJavaLine = "\n" + indentation + matcher.group(1) +"Index = 0;\n" + indentation + "=oldliste.get(oldliste.size() - 1);" +
+						newJavaLine = "\n" + indentation + matcher.group(1) +"Index = 0;\n" + indentation + "liste=oldliste.get(oldliste.size() - 1);" +
 								"\n\n" + indentation + "oldliste.remove(oldliste.size() - 1);\n";
 						preventSELECT--;									// decrement to know if code is out of a mimic loop
 						patternFound = true;
+						if (ignoreError) {
+							newJavaLine += indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
+						}
 						break;
 
 					}else {
@@ -197,8 +240,11 @@ public class Interpreter {
 				}else{
 					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops (if there is one, the only case is that this is the only thing on the line except tabulations
 						patternFound = true;
-						countEnd--;
+						removed = functionPile.remove(functionPile.size() - 1); // delete the last function opened
 						newJavaLine = indentation + "}";
+						if (ignoreError && !removed.equals("MIMIC")){
+							newJavaLine +="\n" + indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
+						}
 						break;
 					}
 				}
@@ -231,8 +277,8 @@ public class Interpreter {
 
 		}
 
-		if(countEnd != 0 && !ignoreError){
-			throw new IllegalStateException("the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
+		if(!functionPile.isEmpty() && !ignoreError){
+			throw new IllegalStateException(functionPile.toString() + "the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
 		}
 
 		if(preventSELECT != 0 && !ignoreError){

@@ -25,10 +25,11 @@ public class Pointer {
     private final GraphicsContext gc;
 
     private Color[] colors = {Color.BLUE, Color.RED, Color.GREEN};
+    private Color currentColor = Color.BLACK; // currentColor declaration
 
     public Pointer(GraphicsContext gc) {
         this.gc = gc;
-        this.cursor = new Circle(pos_x, pos_y, 5, Color.BLACK);
+        this.cursor = new Circle(pos_x, pos_y, 5, currentColor);
 
     }
     public Circle getCursor() {
@@ -111,7 +112,7 @@ public class Pointer {
                     pointsX[1] += deltaX;
                     pointsY[1] += deltaY;
                 }
-
+                gc.setStroke(currentColor); //Use of currentColor to define the color of the stroke
                 gc.setLineWidth(2);
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
 
@@ -232,6 +233,11 @@ public class Pointer {
      * @param blue
      */
     public void setColor(int red, int green, int blue){
+        if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255){
+            throw new IllegalArgumentException("RGB values must be between 0 and 255.");
+        }
+
+        this.currentColor = Color.rgb(red,green,blue);
 
     }
 
@@ -239,7 +245,33 @@ public class Pointer {
      * change the color with a hexadcimal code
      * @param hexadecimal
      */
-    public void setColor(String hexadecimal){}
+    public void setColor(String hexadecimal){
+        this.currentColor = Color.web(hexadecimal);
+    }
+
+    /**
+     * change the color with a rgb code in decimal
+     *
+     * @param red
+     * @param green
+     * @param blue
+     */
+    public void setColor(double red, double green, double blue){
+        if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 || blue < 0.0 || blue > 1.0){
+            throw new IllegalArgumentException("RGB values must be between 0.0 and 1.0");
+        }
+
+        this.currentColor = Color.color(red, green, blue);
+    }
+
+    /**
+     * change the color with an instance of the Color class
+     *
+     * @param color
+     */
+    public void setColor(Color color){
+        this.currentColor = color;
+    }
 
 
 /*

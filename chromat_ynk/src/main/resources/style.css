@@ -1,10 +1,21 @@
+.root {
+    -fx-background-color: #bdd3ef;
+    -fx-min-width: 1918px;
+    -fx-min-height: 1078px;
+}
+
 .box {
     -fx-alignment: top-left;
     -fx-padding: 0px 0px 0px 20px;
 }
 
+.subbox {
+    -fx-padding: 0px 0px 30px 0px;
+}
+
 .gbox {
     -fx-background-color: #dedede;
+    -fx-max-width: 800px;
     -fx-border: solid ;
     -fx-border-width: 3px;
     -fx-border-color: grey;

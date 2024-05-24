@@ -49,6 +49,7 @@ public class App extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Menu"); //set the title of the main window
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        primaryStage.setFullScreen(true);
 
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds(); //get the dimension of the user screen
 
@@ -56,6 +57,7 @@ public class App extends Application {
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
         vbox.getStylesheets().add(("/style.css"));
+        vbox.getStyleClass().add("root");
 
         ScrollPane scrollPane = new ScrollPane(); //put the vbox with a scrollbar
         scrollPane.setContent(vbox);
@@ -230,6 +232,7 @@ public class App extends Application {
         });                                                     //this button let the user choose if he want to ignore or not the errors
 
         HBox buttonBox = new HBox(10);
+        buttonBox.getStyleClass().add("subbox");
         buttonBox.getChildren().addAll(writeButton, selectFileButton, slider, selecterror, executeFile);
         vbox.getChildren().add(buttonBox);
     }

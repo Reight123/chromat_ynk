@@ -6,9 +6,14 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
@@ -107,29 +112,29 @@ public class Main extends Application {
          Pointer currentPointer;
 Pointer cursor1 = new Pointer(gc);
 		int cursor1Index = 0;
-		 currentPointer = cursor1 ; 
-		 currentPointer.turnRight( 40 ); 
-		 currentPointer.fwd( 100 ); 
-		 currentPointer.turnRight( 10 ); 
-		 currentPointer.fwd( 40 ); 
+		 currentPointer = cursor1 ;
+		 currentPointer.turnRight( 40 );
+		 currentPointer.fwd( 100 );
+		 currentPointer.turnRight( 10 );
+		 currentPointer.fwd( 40 );
 		for(double i=0; i<=19; i++){
-		
-		 currentPointer.turnRight( 10 ); 
-		 currentPointer.fwd( 10 ); 
+
+		 currentPointer.turnRight( 10 );
+		 currentPointer.fwd( 10 );
 		  }
-		
-		 currentPointer.pos( 400,400 ); 
-		 currentPointer.turnLeft( 110 ); 
-		 currentPointer.fwd( 100 ); 
-		 currentPointer.turnLeft( 10 ); 
-		 currentPointer.fwd( 40 ); 
+
+		 currentPointer.pos( 400,400 );
+		 currentPointer.turnLeft( 110 );
+		 currentPointer.fwd( 100 );
+		 currentPointer.turnLeft( 10 );
+		 currentPointer.fwd( 40 );
 		for(double j=0; j<=19; j++){
-		
-		 currentPointer.turnLeft( 10 ); 
-		 currentPointer.fwd( 10 ); 
+
+		 currentPointer.turnLeft( 10 );
+		 currentPointer.fwd( 10 );
 		  }
-		
-		 currentPointer.pos( 500,500 ); 
+
+		 currentPointer.pos( 500,500 );
 
 
         return  currentPointer;

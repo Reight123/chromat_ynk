@@ -1,28 +1,32 @@
 package fr.cyu.chroma;
 
 import javafx.application.Application;
-import javafx.animation.TranslateTransition;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-import javax.imageio.ImageIO;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javafx.animation.TranslateTransition;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.util.Duration;
 
 public class Main extends Application {
     private Canvas canvas;
@@ -30,7 +34,6 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Votre dessin");
-        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
         primaryStage.setX(1050);
         primaryStage.setY(125);
 
@@ -106,68 +109,35 @@ public class Main extends Application {
         target.add(targetPointer);
 
 
-         Pointer currentPointer = null;
-		Pointer cursor1 = new Pointer(gc);
+         Pointer currentPointer;
+Pointer cursor1 = new Pointer(gc);
 		int cursor1Index = 0;
-		 currentPointer = cursor1 ; 
-		try{
-			 currentPointer.turnRight( 40 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.fwd( 100 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.turnRight( 10 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.fwd( 40 ); 
-		} catch (Exception ignored){}
+		 currentPointer = cursor1 ;
+		 currentPointer.turnRight( 40 );
+		 currentPointer.fwd( 100 );
+		 currentPointer.turnRight( 10 );
+		 currentPointer.fwd( 40 );
 		for(double i=0; i<=19; i++){
-		
-		try{
-			 currentPointer.turnRight( 10 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.fwd( 10 ); 
-		} catch (Exception ignored){}
-		
-		}
-		
-		try{
-			 currentPointer.pos( 400,400 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.turnLeft( 110 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.fwd( 100 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.turnLeft( 10 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.fwd( 40 ); 
-		} catch (Exception ignored){}
-		for(double j=0; j<=19; j++){
-		
-		try{
-			 currentPointer.turnLeft( 10 ); 
-		} catch (Exception ignored){}
-		try{
-			 currentPointer.fwd( 10 ); 
-		} catch (Exception ignored){}
-		
-		}
-		
-		try{
-			 currentPointer.pos( 500,500 ); 
-		} catch (Exception ignored){}
 
-        if (currentPointer != null) {
-            return currentPointer;
-        } else {
-            return new Pointer(gc); // if the user don't select a pointer, return a new one to not crash the program
-        }
+		 currentPointer.turnRight( 10 );
+		 currentPointer.fwd( 10 );
+		  }
+
+		 currentPointer.pos( 400,400 );
+		 currentPointer.turnLeft( 110 );
+		 currentPointer.fwd( 100 );
+		 currentPointer.turnLeft( 10 );
+		 currentPointer.fwd( 40 );
+		for(double j=0; j<=19; j++){
+
+		 currentPointer.turnLeft( 10 );
+		 currentPointer.fwd( 10 );
+		  }
+
+		 currentPointer.pos( 500,500 );
+
+
+        return  currentPointer;
     }
 
     private void saveDrawing() {

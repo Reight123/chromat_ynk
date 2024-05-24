@@ -73,6 +73,7 @@ public class Interpreter {
 		String javaCode = " Pointer currentPointer";						// currentPointer must be declared because the user won't do it
 		if (ignoreError){javaCode+=" = null;";}else{javaCode+=";";}			// if the instruction will be surrounded by try catch, add "= null" to detect the error, if not don't add it, or it will crash
 		int preventSELECT = 0;
+		int countEnd = 0;
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
 		cyCode = cyCode.replaceAll("\\}", "\n" + indentation + "}\n");		// skip line next to } to prevent having code on the same line as a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));			// separate in a list of lines
@@ -95,6 +96,10 @@ public class Interpreter {
 				Pattern pattern = Pattern.compile(key);
 				Matcher matcher = pattern.matcher(newCyLine);				// for each keyword, check if one match the line
 				if (matcher.find()) {
+
+					if(key.contains("FOR") || key.contains("WHILE") || key.contains("IF")){
+						countEnd++;
+					}
 
 					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
 
@@ -192,7 +197,9 @@ public class Interpreter {
 				}else{
 					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops (if there is one, the only case is that this is the only thing on the line except tabulations
 						patternFound = true;
+						countEnd--;
 						newJavaLine = indentation + "}";
+						break;
 					}
 				}
 
@@ -222,6 +229,10 @@ public class Interpreter {
 
 			javaCode += "\n" + newJavaLine;									// add the new line to the java code
 
+		}
+
+		if(countEnd != 0 && !ignoreError){
+			throw new IllegalStateException("the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
 		}
 
 		if(preventSELECT != 0 && !ignoreError){

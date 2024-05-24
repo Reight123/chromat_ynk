@@ -1,32 +1,28 @@
 package fr.cyu.chroma;
 
 import javafx.application.Application;
+import javafx.animation.TranslateTransition;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Screen;
+import javafx.scene.paint.Color;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-
+import javafx.util.Duration;
 import javax.imageio.ImageIO;
+
 import java.io.File;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javafx.animation.TranslateTransition;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.util.Duration;
 
 public class Main extends Application {
     private Canvas canvas;
@@ -34,6 +30,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Votre dessin");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
         primaryStage.setX(1050);
         primaryStage.setY(125);
 
@@ -109,35 +106,79 @@ public class Main extends Application {
         target.add(targetPointer);
 
 
-         Pointer currentPointer;
-Pointer cursor1 = new Pointer(gc);
-		int cursor1Index = 0;
-		 currentPointer = cursor1 ;
-		 currentPointer.turnRight( 40 );
-		 currentPointer.fwd( 100 );
-		 currentPointer.turnRight( 10 );
-		 currentPointer.fwd( 40 );
-		for(double i=0; i<=19; i++){
+         Pointer currentPointer = null;
+		Pointer c1 = new Pointer(gc);
+		int c1Index = 0;
+		 currentPointer = c1 ; 
+		try{
+			 currentPointer.pos( 300,300 ); 
+		} catch (Exception ignored){}
+		Pointer c3 = new Pointer(gc);
+		int c3Index = 0;
+		 currentPointer = c3 ; 
+		try{
+			 currentPointer.pos( 500,500 ); 
+		} catch (Exception ignored){}
+		Pointer c2 = new Pointer(gc);
+		int c2Index = 0;
+		 currentPointer = c2 ; 
+		try{
+		targetStart = c1;
+		k++;
+		oldliste.add(new ArrayList<>(liste));
+		tempPointer = new Pointer(gc);
+		tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
+		temp.add(tempPointer);
+		targetPointer = new Pointer(gc);
+		targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());
+		target.add(targetPointer);liste.add(temp.get(k));
+		liste.add(target.get(k));
+		for(; c1Index <2;c1Index++){
+			currentPointer = liste.get(liste.size()-1 -c1Index);
+		
+		
+		try{
+		targetStart = c3;
+		k++;
+		oldliste.add(new ArrayList<>(liste));
+		tempPointer = new Pointer(gc);
+		tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
+		temp.add(tempPointer);
+		targetPointer = new Pointer(gc);
+		targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());
+		target.add(targetPointer);liste.add(temp.get(k));
+		liste.add(target.get(k));
+		for(; c3Index <2;c3Index++){
+			currentPointer = liste.get(liste.size()-1 -c3Index);
+		
+		
+		try{
+			 currentPointer.fwd( 50 ); 
+		} catch (Exception ignored){}
+		
+		}
+		
 
-		 currentPointer.turnRight( 10 );
-		 currentPointer.fwd( 10 );
-		  }
+		c3Index = 0;
+		liste=oldliste.get(oldliste.size() - 1);
 
-		 currentPointer.pos( 400,400 );
-		 currentPointer.turnLeft( 110 );
-		 currentPointer.fwd( 100 );
-		 currentPointer.turnLeft( 10 );
-		 currentPointer.fwd( 40 );
-		for(double j=0; j<=19; j++){
+		oldliste.remove(oldliste.size() - 1);
+		} catch (Exception ignored){}
+		
+		}
+		
 
-		 currentPointer.turnLeft( 10 );
-		 currentPointer.fwd( 10 );
-		  }
+		c1Index = 0;
+		liste=oldliste.get(oldliste.size() - 1);
 
-		 currentPointer.pos( 500,500 );
+		oldliste.remove(oldliste.size() - 1);
+		} catch (Exception ignored){}
 
-
-        return  currentPointer;
+        if (currentPointer != null) {
+            return currentPointer;
+        } else {
+            return new Pointer(gc); // if the user don't select a pointer, return a new one to not crash the program
+        }
     }
 
     private void saveDrawing() {

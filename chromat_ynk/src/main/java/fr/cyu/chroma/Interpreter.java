@@ -39,7 +39,7 @@ public class Interpreter {
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)", new String[]{});
 		put("MIMIC\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});
-		put("MIMICEND\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});
+		put("MIMICEND\\s*", new String[]{});
 
 	}};
 
@@ -75,6 +75,7 @@ public class Interpreter {
 		int preventSELECT = 0;
 		String removed = "";
 		List<String> functionPile = new ArrayList<>();
+		List<String> mimicPile = new ArrayList<>();
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
 		cyCode = cyCode.replaceAll("\\}", "\n" + indentation + "}\n");		// skip line next to } to prevent having code on the same line as a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));			// separate in a list of lines
@@ -185,6 +186,7 @@ public class Interpreter {
 					}else if (key.startsWith("MIMIC") && !key.contains("END")){ // if the match if for MIMIC (and isn't for MIMICEND) write the necessary things to do the mimic
 						key2 = key;
 						functionPile.add("MIMIC");
+						mimicPile.add(matcher.group(1));
 						if (ignoreError){
 							newJavaLine = indentation + "try{\n" + indentation; // if error must be ignored, add try at start of the function
 						}
@@ -206,21 +208,29 @@ public class Interpreter {
 						break;
 
 					}else if (key.contains("END")) {
-						if (!removed.equals("MIMIC") && !ignoreError) {
-							throw new IllegalStateException("Closing MIMIC but function " + removed + " is still opened"); // throw an error to tell the user that there is something wrong
-						}
+                        if (!removed.equals("MIMIC") && !ignoreError) {
+                            throw new IllegalStateException("Closing MIMIC but function " + removed + " is still opened"); // throw an error to tell the user that there is something wrong
+                        }
 
-						key2 = key;
-						newJavaLine = "\n" + indentation + matcher.group(1) +"Index = 0;\n" + indentation + "liste=oldliste.get(oldliste.size() - 1);" +
-								"\n\n" + indentation + "oldliste.remove(oldliste.size() - 1);\n";
-						preventSELECT--;									// decrement to know if code is out of a mimic loop
-						patternFound = true;
-						if (ignoreError) {
-							newJavaLine += indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
-						}
-						break;
+                        String lastMimic = "";
+                        if (!mimicPile.isEmpty()) {
+                            lastMimic = mimicPile.remove(mimicPile.size() - 1);
+                        } else if (!ignoreError) {
+                            throw new IllegalStateException("Closing mimic, but no mimic are still open");
+                        } else {
+                            break;
+                        }
+                        key2 = key;
+                        newJavaLine = "\n" + indentation + lastMimic + "Index = 0;\n" + indentation + "liste=oldliste.get(oldliste.size() - 1);" +
+                                "\n\n" + indentation + "oldliste.remove(oldliste.size() - 1);\n";
+                        preventSELECT--;                                    // decrement to know if code is out of a mimic loop
+                        patternFound = true;
+                        if (ignoreError) {
+                            newJavaLine += indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
+                        }
+                        break;
 
-					}else {
+                    }else {
 						key2 = key;
 						newJavaLine = indentation + "Pointer "+ matcher.group(1) +" = new Pointer(gc);\n" +
 								indentation + "int " + matcher.group(1) + "Index = 0;";
@@ -240,7 +250,14 @@ public class Interpreter {
 				}else{
 					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops (if there is one, the only case is that this is the only thing on the line except tabulations
 						patternFound = true;
-						removed = functionPile.remove(functionPile.size() - 1); // delete the last function opened
+						if (!functionPile.isEmpty()) {
+							removed = functionPile.remove(functionPile.size() - 1); // delete the last function opened
+						}else if(!ignoreError){
+							throw new IllegalStateException("Closing loop, but no loop are opened");
+						} else {
+							break;
+						}
+
 						newJavaLine = indentation + "}";
 						if (ignoreError && !removed.equals("MIMIC")){
 							newJavaLine +="\n" + indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
@@ -251,7 +268,7 @@ public class Interpreter {
 
 				if(preventSELECT < 0){
 					if (!ignoreError) {
-						throw new IllegalStateException("missing end of loop after mimic or mirror"); // throw an error to tell the user that there is more start of mimic and mirror than end
+						throw new IllegalStateException("Missing end of loop after mimic or mirror"); // throw an error to tell the user that there is more start of mimic and mirror than end
 					}
 				}
 

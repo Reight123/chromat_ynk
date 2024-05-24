@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -32,35 +33,39 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = observableArrayList();
     private final ObservableList<Button> addButtons = observableArrayList();
     private final ObservableList<Button> deleteButtons = observableArrayList();
-    private final ObservableList<String> choices = observableArrayList( "BOOL","BWD","COLOR", "CURSOR","DEL","ENDBLOCK","MIMICEND","ENDMIRROR", "FOR","FWD","HIDE","IF", "LOOKAT", "MIMIC", "MIRROR", "MOV","NUM", "POS","PRESS","REMOVE","SELECT","SHOW","STR", "THICK","TURNL", "TURNR", "WHILE");
+    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "ENDBLOCK", "ENDMIMIC", "ENDMIRROR", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
     private int drawingWindowWidth = 800;
     private int drawingWindowHeight = 800;
+    private double sliderValue = 50;
+    private boolean errorGestion = false;
     /**
-    this function puts everything the app needs in primaryStage
+     this function puts everything the app needs in primaryStage
 
      @param primaryStage is the window of the app
      */
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Menu");
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setTitle("Menu"); //set the title of the main window
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
 
-        VBox vbox = new VBox();             //creation of the box where the user put his commands
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds(); //get the dimension of the user screen
+
+        VBox vbox = new VBox(); //content of the main window
         vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
         vbox.getStylesheets().add(("/style.css"));
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(); //put the vbox with a scrollbar
         scrollPane.setContent(vbox);
         scrollPane.getStylesheets().add(("/style.css"));
 
-        Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight());
+        Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight()); //instance of the content
 
-        addButtons(vbox);
+        addButtons(vbox); //add the button of the menu
 
-        ChoiceBox<String> choiceBox = new ChoiceBox<>();    //create the list wich showw the choice of command
+        ChoiceBox<String> choiceBox = new ChoiceBox<>(); //setup the first command lign
         choiceBox.getStyleClass().add("choice");
         choiceBox.setItems(choices);
         choiceBoxes.add(choiceBox);
@@ -87,12 +92,14 @@ public class App extends Application {
 
         messageBox = new VBox();        //create the box where the errors will be show
         messageBox.getStyleClass().add("gbox");
+        Label label = new Label("Erreur :");
+        messageBox.getChildren().add(label);
         messageBox.setPadding(new Insets(10));
         messageBox.setSpacing(5);
         vbox.getChildren().add(messageBox);
 
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        primaryStage.setScene(scene); // put the content into the stage
+        primaryStage.show(); //show the content
     }
 
     /**
@@ -104,8 +111,22 @@ public class App extends Application {
         messageBox.getChildren().clear();
         Label label = new Label("Erreur :");    //the first line is always Erreur:
         messageBox.getChildren().add(label);
-        for (String item : items) {         //show every messages line by line
-            label = new Label(item);
+        for (String item : items) {
+            if (item.length() > 90) {
+                StringBuilder wrappedItem = new StringBuilder();
+                int startIndex = 0;
+                int endIndex = Math.min(90, item.length());
+                while (startIndex < item.length()) {    //every 90 caracter add a \n
+                    wrappedItem.append(item.substring(startIndex, endIndex));
+                    wrappedItem.append("\n\t");
+                    startIndex = endIndex;
+                    endIndex = Math.min(startIndex + 90, item.length());
+                }
+                label = new Label(wrappedItem.toString());
+            } else {
+                label = new Label(item);
+            }
+            label.setWrapText(true);
             messageBox.getChildren().add(label);
         }
     }
@@ -129,11 +150,11 @@ public class App extends Application {
 
         Button addButton = new Button("+");
         addButton.getStyleClass().add("buttonmodif");
-        addButton.setOnAction(event -> addNewBlockAfter(vbox, choiceBox));
+        addButton.setOnAction(event -> addNewBlockAfter(vbox, choiceBox));      //if the button is clicked it add a new vbox
 
         Button deleteButton = new Button("-");
         deleteButton.getStyleClass().add("buttonmodif");
-        deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));
+        deleteButton.setOnAction(event -> deleteBlock(vbox, choiceBox));       //if the button is clicked it delete this vbox
 
         HBox hbox = new HBox(10);
         hbox.getStyleClass().add("box");
@@ -166,27 +187,50 @@ public class App extends Application {
      * @param vbox
      */
     private void addButtons(VBox vbox) {
-        Button writeButton = new Button("Enregistrer dans un fichier");
+        Button writeButton = new Button("Enregistrer");
         writeButton.getStyleClass().add("button");
-        writeButton.setOnAction(event -> writeCommand());
+        writeButton.setOnAction(event -> writeCommand());       //if the button is clicked it will begin the save of the script
 
-        Button selectFileButton = new Button("Sélectionner un fichier à exécuter");
+        Button selectFileButton = new Button("Sélectionner un fichier");
         selectFileButton.getStyleClass().add("button");
         selectFileButton.setOnAction(event -> {
             File file = selectFile();
             executeFile(file);
-        });
+        });                                                     //if the button is clicked it will select a file to execute
 
-        Button selectThisFileButton = new Button("Exécuter ce fichier");
-        selectThisFileButton.getStyleClass().add("button");
-        selectThisFileButton.setOnAction(event -> {
+        Label executeFile = new Label("\u25B6");
+        executeFile.getStyleClass().add("sbutton");
+        executeFile.setOnMouseClicked(event -> {
             saveToFile(".currentFile");
             File file = new File("./storage/.currentFile.txt");
             executeFile(file);
-        });
+        });                                                     //if the button is clicked it will execut the current script
 
-        HBox buttonBox = new HBox(10); // add the three buttons on the screen
-        buttonBox.getChildren().addAll(writeButton, selectFileButton, selectThisFileButton);
+        Slider slider = new Slider(0, 100, 50);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(25);
+        slider.setMinorTickCount(5);
+        slider.setBlockIncrement(10);
+        slider.getStyleClass().add("slider");
+        slider.setOnMouseReleased(event -> {
+            sliderValue = slider.getValue();
+        });                                                     //this slider let the user choose the drawing's speed
+
+        ToggleButton  selecterror= new ToggleButton("Gestion Erreur");
+        selecterror.getStyleClass().add("button");
+        selecterror.setOnAction(event -> {
+            if (selecterror.isSelected()) {
+                selecterror.setText("Arret si Erreur");
+                errorGestion = false;
+            } else {
+                selecterror.setText("Erreurs ignorés");
+                errorGestion = true;
+            }
+        });                                                     //this button let the user choose if he want to ignore or not the errors
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.getChildren().addAll(writeButton, selectFileButton, slider, selecterror, executeFile);
         vbox.getChildren().add(buttonBox);
     }
 
@@ -211,7 +255,7 @@ public class App extends Application {
                 }
             });
             vbox.getChildren().addAll(fileNameField, confirmButton);
-            Scene scene = new Scene(vbox, 400, 125);
+            Scene scene = new Scene(vbox, 400, 125);            //open the save window
             scene.getStylesheets().add("/style.css");
             stage.setScene(scene);
             stage.show();
@@ -278,7 +322,7 @@ public class App extends Application {
             selectedFile = selectFile();
         }
 
-        messageBox.getChildren().clear(); // delete errors from previous execution
+        updateMessageBox(error, messageBox); // delete errors from previous execution
 
         String fileContent = getFileContent(selectedFile);
         String javaCode = "";
@@ -286,26 +330,36 @@ public class App extends Application {
         if (!fileContent.isEmpty()) {
             try {
                 Interpreter interpreter = new Interpreter(this.drawingWindowWidth, this.drawingWindowHeight);
-                javaCode = interpreter.decode(fileContent);             //turn the selected file into a java script
+                javaCode = interpreter.decode(fileContent, errorGestion);              //turn the selected file into a java script
                 File templateFile = new File("../plotter/src/main/template/templateMain.java");
                 String temp = getFileContent(templateFile);
-                String[] template = temp.split("//insertion area do not delete//"); //find in the executable where it can put the script
+                String[] template;
+                if(temp.contains("//insertion area do not delete//")) {
+                    template = temp.split("//insertion area do not delete//");//find in the executable where it can put the script
+                } else {
+                    updateMessageBox(observableArrayList("source file plotter/src/main/template/templateMain.java does not contains insertion area"), messageBox);
+                    System.out.println("error while executing file : source file plotter/src/main/template/templateMain.java does not contains insertion area");
+                    return;
+                }
 
-                if (template.length == 2 && !temp.isEmpty()) {
+
+                if (template.length == 2 && !javaCode.isEmpty()) {
                     javaCode = template[0] + javaCode + template[1];
-                    writeJavaFile(javaCode);    //put the scipt in the executable
-                    if (!javaCode.isEmpty()) {
-                        Thread thread = new Thread(() -> run(this, messageBox));
-                        thread.start();
-                    }
+                    writeJavaFile(javaCode);   //put the scipt in the executable
+                    Thread thread = new Thread(() -> run(this, messageBox));
+                    thread.start();
+                } else {
+                    updateMessageBox(observableArrayList("source file plotter/src/main/template/templateMain.java is missing parts"), messageBox);
+                    System.out.println("source file plotter/src/main/template/templateMain.java is missing parts");
                 }
 
             } catch (Exception e){
-                System.out.println("Error while compiling commands to java: " + e.getMessage());
-                // TODO tell user that operation failed
+                updateMessageBox(observableArrayList(e.getMessage()), messageBox);
+                System.out.println("error while executing : " + e.getMessage());
             }
         } else {
-            // TODO tell user that operation failed
+            updateMessageBox(observableArrayList("Selected file " + selectedFile.toString() + " is empty"), messageBox);
+            System.out.println("error while executing : Selected file " + selectedFile.toString() + " is empty");
         }
     }
 
@@ -326,11 +380,13 @@ public class App extends Application {
                 }
                 fileContent = content.toString();
             } catch (IOException e) {
+                updateMessageBox(observableArrayList("Error while reading file: " + e.getMessage()), messageBox);
                 System.out.println("Error while reading file: " + e.getMessage());
             }
             return fileContent;
         } else {
-            System.out.println("Error while reading file: " + "null File");
+            updateMessageBox(observableArrayList("Error while reading file: file \"null\" does not exist"), messageBox);
+            System.out.println("Error while reading file: file \"null\" does not exist");
             return "";
         }
     }
@@ -343,7 +399,8 @@ public class App extends Application {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("../plotter/src/main/java/fr/cyu/chroma/Main.java"))) {
             writer.write(fileContent);
         } catch (IOException e) {
-            e.printStackTrace();
+            updateMessageBox(observableArrayList("Error while writing file Main.java : " + e.getMessage()), messageBox);
+            System.out.println("Error while writing file Main.java : " + e.getMessage());
         }
     }
 
@@ -363,8 +420,7 @@ public class App extends Application {
                 processBuilder = new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run");
             } else {    //error message when the os is neither windows, mac or linux
                 Platform.runLater(() -> {
-                    ObservableList<String> unsupportedOsMessage = observableArrayList("OS not supported.");
-                    updateMessageBox(unsupportedOsMessage, messageBox);
+                    updateMessageBox(observableArrayList("OS " + osName + " is not supported."), messageBox);
                 });
                 return;
             }
@@ -374,9 +430,11 @@ public class App extends Application {
             BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
             String error;
+            String fullError = "";
             boolean interestingPart = false;
             ObservableList<String> errorMessages = observableArrayList();
             while ((error = stdError.readLine()) != null) {
+                fullError += error+"\n";
                 if (error.contains("[Help 1]")) {                // when the error finishes explaining the pb, stop printing it
                     interestingPart = false;
                 }
@@ -388,15 +446,18 @@ public class App extends Application {
                     }
                 }
                 if (error.contains("Failed to execute goal")) {          // when the error explains what is th pb, start printing it
+                    errorMessages.add(error);
                     interestingPart = true;
                 }
             }
 
-            if (!errorMessages.isEmpty()) {
+            if (!errorMessages.isEmpty()) {                     //update the box only if there is an error
                 Platform.runLater(() -> appInstance.updateMessageBox(errorMessages, messageBox));
+                System.out.println(fullError);
             }
 
         } catch (Exception e) {
+            updateMessageBox(observableArrayList("Error while executing file: " + e.getMessage()), messageBox);
             System.out.println("Error while executing file: " + e.getMessage());
         }
     }

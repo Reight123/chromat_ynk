@@ -200,11 +200,9 @@ public class App extends Application {
             if (selecterror.isSelected()) {
                 selecterror.setText("Arret si Erreur");
                 errorGestion = false;
-                System.out.println(errorGestion);
             } else {
                 selecterror.setText("Erreurs ignorés");
                 errorGestion = true;
-                System.out.println(errorGestion);
             }
         });
 
@@ -295,7 +293,6 @@ public class App extends Application {
             try {
                 Interpreter interpreter = new Interpreter(this.drawingWindowWidth, this.drawingWindowHeight);
                 javaCode = interpreter.decode(fileContent, errorGestion);
-                System.out.println(errorGestion);
                 File templateFile = new File("../plotter/src/main/template/templateMain.java");
                 String temp = getFileContent(templateFile);
                 String[] template;
@@ -383,9 +380,11 @@ public class App extends Application {
             BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
             String error;
+            String fullError = "";
             boolean interestingPart = false;
             ObservableList<String> errorMessages = observableArrayList();
             while ((error = stdError.readLine()) != null) {
+                fullError += error+"\n";
                 if (error.contains("[Help 1]")) {                // when the error finishes explaining the pb, stop printing it
                     interestingPart = false;
                 }
@@ -397,12 +396,14 @@ public class App extends Application {
                     }
                 }
                 if (error.contains("Failed to execute goal")) {          // when the error explains what is th pb, start printing it
+                    errorMessages.add(error);
                     interestingPart = true;
                 }
             }
 
             if (!errorMessages.isEmpty()) {
                 Platform.runLater(() -> appInstance.updateMessageBox(errorMessages, messageBox));
+                System.out.println(fullError);
             }
 
         } catch (Exception e) {

@@ -232,7 +232,7 @@ public class Interpreter {
 		}
 
 		if(countEnd != 0 && !ignoreError){
-			throw new IllegalStateException(countEnd + "the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of mimic and mirror than end
+			throw new IllegalStateException("the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
 		}
 
 		if(preventSELECT != 0 && !ignoreError){

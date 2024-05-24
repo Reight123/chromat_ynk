@@ -12,7 +12,7 @@
 }
 
 .button {
-    -fx-min-width: 280px;
+    -fx-min-width: 160px;
     -fx-background-color: #ed2e2e;
     -fx-border: none;
     -fx-color: white;
@@ -24,6 +24,23 @@
 }
 
 .button:hover {
+    -fx-background-color: #b50000;
+    -fx-cursor: hand;
+}
+
+.sbutton {
+    -fx-min-width: 50px;
+    -fx-background-color: #ed2e2e;
+    -fx-border: none;
+    -fx-color: white;
+    -fx-text-fill: white;
+    -fx-padding: 10px 25px;
+    -fx-font-size: 14px;
+    -fx-cursor: pointer;
+    -fx-background-radius: 10px;
+}
+
+.sbutton:hover {
     -fx-background-color: #b50000;
     -fx-cursor: hand;
 }
@@ -88,3 +105,43 @@
     -fx-background-color: #b50000;
     -fx-cursor: hand;
 }
+
+.slider .track {
+    -fx-background-color: #E0E0E0;
+    -fx-padding: 0.25em;
+    -fx-background-radius: 0.25em;
+}
+
+.slider .thumb {
+    -fx-shape: "M 10 10 L 20 20 L 10 30 Z M 20 10 L 30 20 L 20 30 Z";
+    -fx-background-color: #ed2e2e;
+    -fx-background-insets: 0;
+    -fx-background-radius: 1.5em;
+    -fx-padding: 0.5em;
+}
+
+.slider .tick-mark {
+    -fx-stroke: #ed2e2e;
+}
+
+.slider .increment-button, .slider .decrement-button {
+    -fx-background-color: transparent;
+}
+
+.slider .increment-arrow, .slider .decrement-arrow {
+    -fx-background-color: transparent;
+}
+
+.slider .increment-arrow .arrow, .slider .decrement-arrow .arrow {
+    -fx-background-color: transparent;
+}
+
+.slider .major-tick-mark {
+    -fx-stroke-width: 1.5px;
+}
+
+.slider .minor-tick-mark {
+    -fx-stroke-width: 1px;
+}
+
+

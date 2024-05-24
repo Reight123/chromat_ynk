@@ -1,14 +1,13 @@
 package fr.cyu.chroma;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Interpreter {
 
 	private int maxWindowWidth;                                             // window information needed to convert %age
+	private static final Set<String> COLOR_NAMES = new HashSet<>(); 		// will contain the list of allowed color names
 
 	private final Map<String, String[]> keywords = new HashMap<>() {{		// create a map, with a regex expression to find keywords and isolate what is before and after, and the associated template
 		put("CURSOR\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});				// separate the template in several parts, to put the inputs afterward
@@ -62,23 +61,27 @@ public class Interpreter {
 
 
 	/**
-	 *  This function translates cyCode into javaCode
+	 *  This function translates the cyCode pseudo code into javaCode
 	 *
 	 * @param cyCode pseudocode written by the user
+	 * @param ignoreError A boolean indicating whether errors should be thrown or ignored.
 	 * @return String java code equivalent of cyCode
+	 * @throws IllegalArgumentException If there is an illegal argument passed to the function
 	 */
-	public String decode(String cyCode) {
+	public String decode(String cyCode, boolean ignoreError) throws IllegalArgumentException, IllegalStateException{
 		String indentation = "\t\t";
-		String javaCode = " Pointer currentPointer;";			// currentPointer must be declared because the user won't do it
+		String javaCode = " Pointer currentPointer";						// currentPointer must be declared because the user won't do it
+		if (ignoreError){javaCode+=" = null;";}else{javaCode+=";";}			// if the instruction will be surrounded by try catch, add "= null" to detect the error, if not don't add it, or it will crash
+		int preventSELECT = 0;
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
-		cyCode = cyCode.replaceAll("\\}", " }\n");		    	    // skip line after } to prevent have code on the same line after a }
-		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));		// separate in a list of lines
+		cyCode = cyCode.replaceAll("\\}", "\n" + indentation + "}\n");		// skip line next to } to prevent having code on the same line as a }
+		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));			// separate in a list of lines
 
 		for (String cyLine : cyLines) {
 			String newCyLine = "";
 			String newJavaLine = indentation;
+			boolean doUnknownCommands = false;
 			boolean patternFound = false;
-			boolean containsEnd = false;
 			int indexComment = cyLine.indexOf("//");						// look for comment in the code and get everything but it, so it doesn't affect the java code
 			if (indexComment != -1) {
 				newCyLine = cyLine.substring(0, indexComment);
@@ -87,142 +90,176 @@ public class Interpreter {
 			}
 
 
-
+			String key2 = "";
 			for (String key : keywords.keySet()) {
 				Pattern pattern = Pattern.compile(key);
 				Matcher matcher = pattern.matcher(newCyLine);				// for each keyword, check if one match the line
 				if (matcher.find()) {
-					if (newCyLine.contains("}")){							// check if the cyCode contains a }, and if so remove it, to replace it later at the right place
-						newCyLine = newCyLine.replaceAll("}", "");
-						containsEnd = true;
-					}
 
-					if (!key.contains("FOR")  && !key.startsWith("MIMIC") /*!(key.contains("MIMIC") && !key.contains("ENDMIMIC"))*/ && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
+					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
 
-						String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
-						int i = 0;
-						String[] template = keywords.get(key);
+						if (!(preventSELECT != 0 && key.contains("SELECT"))) {
+							String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
+							int i = 0;
+							String[] template = keywords.get(key);
 
-						for (String input : inputs) {                       // for each part, put it in the equivalent java line, with the template
-							input = convert(key, i, input);                 // convert percentage to px, and hexa color to rgb
-							newJavaLine += input + " " + template[i] + " ";
-							i++;
+							for (String input : inputs) {                       // for each part, put it in the equivalent java line, with the template
+								input = convert(key, i, input, ignoreError);    // convert percentage to px, set undefined variable, set hexadecimal code as String, ...
+								newJavaLine += input + " " + template[i] + " ";
+								i++;
+							}
+
+							key2 = key;
+							patternFound = true;
+							break;
+						}else{
+							if (!ignoreError) {									// if there is a select inside a mimic or a mirror
+								throw new IllegalArgumentException("Usage of select is restricted inside mimic and mirror loop"); // if errors are not ignored, throw an error
+							}
+							patternFound = true;								// if errors aren't ignored, the pattern has been found
+							break;
 						}
 
-						patternFound = true;
-						break;
-
-					}else if(key.contains("FOR")) {                            // the FOR command has several cases, and thus each of them must be able to be constructed
+					}else if(key.contains("FOR")) {                           	// the FOR command has several cases, and thus each of them must be able to be constructed
 						int counter = matcher.groupCount();
+						key2 = key;
 
-						if (counter == 4) {                                  // if the FOR command is the one with TO FROM and STEP
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) + "){";
+						if (counter == 4) {                                  	// if the FOR command is the one with TO FROM and STEP
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "+=" + matcher.group(4) + "){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 3 && key.contains("STEP")) {      // if the FOR command is the one with TO and STEP
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) + "){";
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "+=" + matcher.group(3) + "){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 3 && key.contains("FROM") && !newCyLine.contains("STEP")) { // if the FOR command is the one with TO and FROM
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=" + matcher.group(2) + "; " + matcher.group(1) + "<=" + matcher.group(3) + "; " + matcher.group(1) + "++){";
 							patternFound = true;
 							break;
 
 						} else if (counter == 2 && !newCyLine.contains("STEP")) { // if the FOR command is the one with just TO
-							newJavaLine = "\t\tfor(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
+							newJavaLine = indentation + "for(double " + matcher.group(1) + "=0; " + matcher.group(1) + "<=" + matcher.group(2) + "; " + matcher.group(1) + "++){";
 							patternFound = true;
 							break;
 						}
+
 					}else if (key.startsWith("MIMIC") && !key.contains("END")){ // if the match if for MIMIC (and isn't for MIMICEND) write the necessary things to do the mimic
-						//System.out.println("'" + key + "'");
-						newJavaLine = "targetStart = " + matcher.group(1) +";\n\t\t" +
-								"k++;\n\t\t" +
-								"oldliste.add(new ArrayList<>(liste));\n\t\t" +
-								"tempPointer = new Pointer(gc);\n\t\t" +
-								"tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n\t\t" +
-								"temp.add(tempPointer);\n\t\t" +
-								"targetPointer = new Pointer(gc);\n\t\t" +
-								"targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());\n\t\t" +
+						key2 = key;
+						newJavaLine = "targetStart = " + matcher.group(1) +";\n" + indentation +
+								"k++;\n" + indentation +
+								"oldliste.add(new ArrayList<>(liste));\n" + indentation +
+								"tempPointer = new Pointer(gc);\n" + indentation +
+								"tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n" + indentation +
+								"temp.add(tempPointer);\n" + indentation +
+								"targetPointer = new Pointer(gc);\n" + indentation +
+								"targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());\n" + indentation +
 								"target.add(targetPointer);" +
-								"liste.add(temp.get(k));\n\t\t" +
-								"liste.add(target.get(k));\n\t\t" +
-								"for(; " + matcher.group(1) + "Index <2;"+matcher.group(1) + "Index++){\n\t\t\t" +
-								"currentPointer = liste.get(liste.size()-1 -" + matcher.group(1) + "Index);\n\t\t";
+								"liste.add(temp.get(k));\n" + indentation +
+								"liste.add(target.get(k));\n" + indentation +
+								"for(; " + matcher.group(1) + "Index <2;"+matcher.group(1) + "Index++){\n\t" + indentation +
+								"currentPointer = liste.get(liste.size()-1 -" + matcher.group(1) + "Index);\n" + indentation;
+						preventSELECT++;									// increment to know if code is in a mimic loop
 						patternFound = true;
 						break;
 
 					}else if (key.contains("END")) {
-						newJavaLine = "\n\t\t"+ matcher.group(1) +"Index = 0;\n\t\tliste=oldliste.get(oldliste.size() - 1);" +
-								"\n\n\t\toldliste.remove(oldliste.size() - 1);\n";
+						key2 = key;
+						newJavaLine = "\n" + indentation + matcher.group(1) +"Index = 0;\n" + indentation + "=oldliste.get(oldliste.size() - 1);" +
+								"\n\n" + indentation + "oldliste.remove(oldliste.size() - 1);\n";
+						preventSELECT--;									// decrement to know if code is out of a mimic loop
 						patternFound = true;
 						break;
 
 					}else {
-						newJavaLine = "Pointer "+ matcher.group(1) +" = new Pointer(gc);\n" +
-								"\t\tint " + matcher.group(1) + "Index = 0;";
+						key2 = key;
+						newJavaLine = indentation + "Pointer "+ matcher.group(1) +" = new Pointer(gc);\n" +
+								indentation + "int " + matcher.group(1) + "Index = 0;";
 						patternFound = true;
 						break;
 					}
 
-						String[] inputs = newCyLine.split(matcher.group(0)); // add what was before and after the key
-						if(inputs.length == 2){
-							newJavaLine = indentation + inputs[0] + " " + newJavaLine + " " + inputs[1];
-						}else{
-							newJavaLine = indentation + " " + newJavaLine;
-						}
+					String[] inputs = newCyLine.split(matcher.group(0)); // add what was before and after the key
+					if(inputs.length == 2){
+						newJavaLine = indentation + inputs[0] + " " + newJavaLine + " " + inputs[1];
+					}else{
+						newJavaLine = indentation + " " + newJavaLine;
+					}
 
 
 
 				}else{
-					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops
-						containsEnd = true;
+					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops (if there is one, the only case is that this is the only thing on the line except tabulations
+						patternFound = true;
+						newJavaLine = indentation + "}";
+					}
+				}
+
+				if(preventSELECT < 0){
+					if (!ignoreError) {
+						throw new IllegalStateException("missing end of loop after mimic or mirror"); // throw an error to tell the user that there is more start of mimic and mirror than end
 					}
 				}
 
 			}
 
-			if (containsEnd){												// if the cyCode lines contained a }, then place it at the end of the java code
-				if (patternFound){
-					newJavaLine = newJavaLine + "\n" + indentation + " }";
-				}else{
-					newJavaLine = indentation + " " + newCyLine;            //  if the line contains a } and no pattern, just copy it, and do not add a ;
-				}
-			}else{
-				if(!patternFound && !newCyLine.matches("[ \t]*")){	// if no pattern are found and the line contains other things that space or tabulation
-					newJavaLine = indentation + " " + newCyLine + ";";
-				}
+			if(!patternFound && !newCyLine.matches("[ \t]*")){	// if no pattern are found and the line contains other things that space or tabulation
+				if (!ignoreError) {
+					throw new IllegalArgumentException("Unknown instruction : " + newCyLine);
+				} else {
+					if (doUnknownCommands) {
+						if (ignoreError) {
+							newJavaLine = indentation + "try{\n" + indentation + "\t" + newCyLine + ";\n" + indentation + "} catch (Exception ignored){}";
+						} else {
+							newJavaLine = indentation + " " + newCyLine + ";";
+						}
+					}
+				}															// if error are ignored and the command is on only a line, and not a variable declaration (because variable declaration cannot be accessed outside try catch blocs)
+			}else if (ignoreError && !newCyLine.matches("[ \t]*") && !newJavaLine.contains("}") && !key2.contains("CURSOR") && !key2.contains("SELECT") && !key2.contains("REMOVE") && !key2.contains("IF") && !key2.contains("FOR") && !key2.contains("WHILE") && !key2.contains("MIMIC") && !key2.contains("MIRROR") && !key2.contains("NUM") && !key2.contains("INT") && !key2.contains("STR") && !key2.contains("BOOL")){
+				newJavaLine = indentation + "try{\n\t"  + newJavaLine + "\n" + indentation + "} catch (Exception ignored){}";
 			}
 
 			javaCode += "\n" + newJavaLine;									// add the new line to the java code
+
+		}
+
+		if(preventSELECT != 0 && !ignoreError){
+			throw new IllegalStateException("the number of end of mimic or mirror doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of mimic and mirror than end
 		}
 
 		return javaCode;
 	}
 
 
+
+
+
+
+
 	/**
-	 *  This function converts content of a given input
+	 * This function converts the content of the given input to its absolute value from a percentage. Undefined variables are set to 0/empty_String/false. The input is converted as a String for the COLOR function if it's a hexadecimal code or a constant if a color name.
 	 *
-	 * @param function cyCode function in which is the input
-	 * @param i number of the current input of the function
-	 * @param input parameter of the function
-	 * @return the input with the parameter(s) converted from %age if needed, the undefined variable set to 0/empty_String/false, the parameter as a String for the COLOR function if it's a hexadecimal code
+	 * @param function The cyCode function in which the input resides.
+	 * @param i The number of the current input of the function.
+	 * @param input The input of the function.
+	 * @param ignoreError A boolean indicating whether errors should be thrown or ignored.
+	 * @return The input converted.
+	 * @throws IllegalArgumentException If there is an illegal argument passed to the function.
 	 */
-	private String convert(String function, int i, String input){
+	private String convert(String function, int i, String input, boolean ignoreError) throws IllegalArgumentException{
 
 		if (i == 1 && !input.contains("=")){
-			if (function.contains("NUM")){                                    // if a double wasn't initialized, put it to 0
+			if (function.contains("NUM")){                                 	// if a double wasn't initialized, put it to 0
 				input = input + " = 0.0";
 			}
-			if (function.contains("INT")){                                    // if a int wasn't initialized, put it to 0
+			if (function.contains("INT")){                                 	// if an int wasn't initialized, put it to 0
 				input = input + " = 0";
 			}
-			if (function.contains("STR")){                                    // if a String wasn't initialized, put it to ""
+			if (function.contains("STR")){                                 	// if a String wasn't initialized, put it to ""
 				input = input + " = \"\"";
 			}
-			if (function.contains("BOOL")){                                   // if a boolean wasn't initialized, put it to false
+			if (function.contains("BOOL")){                                	// if a boolean wasn't initialized, put it to false
 				input = input + " = false";
 			}
 		}
@@ -233,30 +270,230 @@ public class Interpreter {
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input);                     // look for the pattern in the string
 
-				while (matcher.find()) {
+				while (matcher.find()) {									// while there is another % in the line
 					String[] str = input.split(matcher.group(0), 2);    	// split the string just for the first occurrence
 					if (str.length == 2){									// if the pattern is included in the input
 						input = str[0] + "(int) (" + matcher.group(1) + "*(" + this.maxWindowWidth + "/100))" + str[1];
-					} else {                                                 // if the input is the matcher.group(0), meaning the pattern is the whole input
+					} else {                                                // if the input is the matcher.group(0), meaning the pattern is the whole input
 						input = "(int) (" + matcher.group(1) + "*(" + this.maxWindowWidth + "/100))";
 					}
 					matcher = regex.matcher(input);                         // look fot another match in the input
 				}
-			}else {                                                         // if the command is PRESS, then the percentage does not depend on the window size, it just needs to be divided by 100
+			} else {                                                        // if the command is PRESS, then the percentage does not depend on the window size, it just needs to be divided by 100
 				String pattern = "(\\w+\\.?\\d*)\\s*%";
 				Pattern regex = Pattern.compile(pattern);
 				Matcher matcher = regex.matcher(input);
 
 				if (matcher.find()) {
 					input = input.replaceAll(matcher.group(0), "(double) (" + matcher.group(1) + "/100)");   // replace it in the string
+				} else {
+					if (!ignoreError) {
+						throw new IllegalArgumentException("unrecognized pattern in function PRESS with a percentage : " + input);
+					}
 				}
 			}
 		}
 
-		if (input.contains("#") && function.contains("COLOR")) {             // if the color command have a hexadecimal parameter, put it as a String
-			input = "\"" + input + "\"";
+		if (function.contains("COLOR")) {
+			if (input.contains("#")){
+				input = "\"" + input + "\"";								// if the color command have a hexadecimal parameter, put it as a String
+				String pattern = "\\s*(#[0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F])\\s*"; // check that the hexadecimal code has the correct format
+				Pattern regex = Pattern.compile(pattern);
+				Matcher matcher = regex.matcher(input.toUpperCase());
+				if (matcher.find()) {
+					input = matcher.group(1); 								// remove the spaces or tabulations
+				} else {
+					if (!ignoreError) {
+						throw new IllegalArgumentException("unrecognized pattern in function COLOR with a # without a hexadecimal code : " + input); // if the errors aren't ignored, throw an error
+					}
+				}
+			} else {
+				String pattern = "\\s*([A-Za-z]+)\\s*";                        // check if the input is the name of a colour
+				Pattern regex = Pattern.compile(pattern);
+				Matcher matcher = regex.matcher(input.toUpperCase());
+				if (matcher.find()) {
+					if (isColorName(matcher.group(1))) {
+						input = "Color." + matcher.group(1);				// if so then write the constant corresponding to teh colour
+					} else if (!ignoreError) {								// if there is only one argument, then there is an error
+						throw new IllegalArgumentException("unrecognized argument in function COLOR : " + input);
+					}
+				}
+			}
+
 		}
 
 		return input;
+	}
+
+
+
+
+	/**
+	 * Checks if a given string is a valid color name.
+	 *
+	 * @param input The string to check as a color name.
+	 * @return boolean true if the input is a valid color name, false otherwise.
+	 */
+	private boolean isColorName(String input) {
+		if (COLOR_NAMES.isEmpty()){
+			setColorNames();
+		}
+		return COLOR_NAMES.contains(input);
+	}
+
+
+
+
+	/**
+	 * Set the set<String> with all possible colour name.
+	 */
+	private static void setColorNames(){
+		COLOR_NAMES.add("ALICEBLUE");
+		COLOR_NAMES.add("ANTIQUEWHITE");
+		COLOR_NAMES.add("AQUA");
+		COLOR_NAMES.add("AQUAMARINE");
+		COLOR_NAMES.add("AZURE");
+		COLOR_NAMES.add("BEIGE");
+		COLOR_NAMES.add("BISQUE");
+		COLOR_NAMES.add("BLACK");
+		COLOR_NAMES.add("BLANCHEDALMOND");
+		COLOR_NAMES.add("BLUE");
+		COLOR_NAMES.add("BLUEVIOLET");
+		COLOR_NAMES.add("BROWN");
+		COLOR_NAMES.add("BURLYWOOD");
+		COLOR_NAMES.add("CADETBLUE");
+		COLOR_NAMES.add("CHARTREUSE");
+		COLOR_NAMES.add("CHOCOLATE");
+		COLOR_NAMES.add("CORAL");
+		COLOR_NAMES.add("CORNFLOWERBLUE");
+		COLOR_NAMES.add("CORNSILK");
+		COLOR_NAMES.add("CRIMSON");
+		COLOR_NAMES.add("CYAN");
+		COLOR_NAMES.add("DARKBLUE");
+		COLOR_NAMES.add("DARKCYAN");
+		COLOR_NAMES.add("DARKGOLDENROD");
+		COLOR_NAMES.add("DARKGRAY");
+		COLOR_NAMES.add("DARKGREEN");
+		COLOR_NAMES.add("DARKGREY");
+		COLOR_NAMES.add("DARKKHAKI");
+		COLOR_NAMES.add("DARKMAGENTA");
+		COLOR_NAMES.add("DARKOLIVEGREEN");
+		COLOR_NAMES.add("DARKORANGE");
+		COLOR_NAMES.add("DARKORCHID");
+		COLOR_NAMES.add("DARKRED");
+		COLOR_NAMES.add("DARKSALMON");
+		COLOR_NAMES.add("DARKSEAGREEN");
+		COLOR_NAMES.add("DARKSLATEBLUE");
+		COLOR_NAMES.add("DARKSLATEGRAY");
+		COLOR_NAMES.add("DARKSLATEGREY");
+		COLOR_NAMES.add("DARKTURQUOISE");
+		COLOR_NAMES.add("DARKVIOLET");
+		COLOR_NAMES.add("DEEPPINK");
+		COLOR_NAMES.add("DEEPSKYBLUE");
+		COLOR_NAMES.add("DIMGRAY");
+		COLOR_NAMES.add("DIMGREY");
+		COLOR_NAMES.add("DODGERBLUE");
+		COLOR_NAMES.add("FIREBRICK");
+		COLOR_NAMES.add("FLORALWHITE");
+		COLOR_NAMES.add("FORESTGREEN");
+		COLOR_NAMES.add("FUCHSIA");
+		COLOR_NAMES.add("GAINSBORO");
+		COLOR_NAMES.add("GHOSTWHITE");
+		COLOR_NAMES.add("GOLD");
+		COLOR_NAMES.add("GOLDENROD");
+		COLOR_NAMES.add("GRAY");
+		COLOR_NAMES.add("GREEN");
+		COLOR_NAMES.add("GREENYELLOW");
+		COLOR_NAMES.add("GREY");
+		COLOR_NAMES.add("HONEYDEW");
+		COLOR_NAMES.add("HOTPINK");
+		COLOR_NAMES.add("INDIANRED");
+		COLOR_NAMES.add("INDIGO");
+		COLOR_NAMES.add("IVORY");
+		COLOR_NAMES.add("KHAKI");
+		COLOR_NAMES.add("LAVENDER");
+		COLOR_NAMES.add("LAVENDERBLUSH");
+		COLOR_NAMES.add("LAWNGREEN");
+		COLOR_NAMES.add("LEMONCHIFFON");
+		COLOR_NAMES.add("LIGHTBLUE");
+		COLOR_NAMES.add("LIGHTCORAL");
+		COLOR_NAMES.add("LIGHTCYAN");
+		COLOR_NAMES.add("LIGHTGOLDENRODYELLOW");
+		COLOR_NAMES.add("LIGHTGRAY");
+		COLOR_NAMES.add("LIGHTGREEN");
+		COLOR_NAMES.add("LIGHTGREY");
+		COLOR_NAMES.add("LIGHTPINK");
+		COLOR_NAMES.add("LIGHTSALMON");
+		COLOR_NAMES.add("LIGHTSEAGREEN");
+		COLOR_NAMES.add("LIGHTSKYBLUE");
+		COLOR_NAMES.add("LIGHTSLATEGRAY");
+		COLOR_NAMES.add("LIGHTSLATEGREY");
+		COLOR_NAMES.add("LIGHTSTEELBLUE");
+		COLOR_NAMES.add("LIGHTYELLOW");
+		COLOR_NAMES.add("LIME");
+		COLOR_NAMES.add("LIMEGREEN");
+		COLOR_NAMES.add("LINEN");
+		COLOR_NAMES.add("MAGENTA");
+		COLOR_NAMES.add("MAROON");
+		COLOR_NAMES.add("MEDIUMAQUAMARINE");
+		COLOR_NAMES.add("MEDIUMBLUE");
+		COLOR_NAMES.add("MEDIUMORCHID");
+		COLOR_NAMES.add("MEDIUMPURPLE");
+		COLOR_NAMES.add("MEDIUMSEAGREEN");
+		COLOR_NAMES.add("MEDIUMSLATEBLUE");
+		COLOR_NAMES.add("MEDIUMSPRINGGREEN");
+		COLOR_NAMES.add("MEDIUMTURQUOISE");
+		COLOR_NAMES.add("MEDIUMVIOLETRED");
+		COLOR_NAMES.add("MIDNIGHTBLUE");
+		COLOR_NAMES.add("MINTCREAM");
+		COLOR_NAMES.add("MISTYROSE");
+		COLOR_NAMES.add("MOCCASIN");
+		COLOR_NAMES.add("NAVAJOWHITE");
+		COLOR_NAMES.add("NAVY");
+		COLOR_NAMES.add("OLDLACE");
+		COLOR_NAMES.add("OLIVE");
+		COLOR_NAMES.add("OLIVEDRAB");
+		COLOR_NAMES.add("ORANGE");
+		COLOR_NAMES.add("ORANGERED");
+		COLOR_NAMES.add("ORCHID");
+		COLOR_NAMES.add("PALEGOLDENROD");
+		COLOR_NAMES.add("PALEGREEN");
+		COLOR_NAMES.add("PALETURQUOISE");
+		COLOR_NAMES.add("PALEVIOLETRED");
+		COLOR_NAMES.add("PAPAYAWHIP");
+		COLOR_NAMES.add("PEACHPUFF");
+		COLOR_NAMES.add("PERU");
+		COLOR_NAMES.add("PINK");
+		COLOR_NAMES.add("PLUM");
+		COLOR_NAMES.add("POWDERBLUE");
+		COLOR_NAMES.add("PURPLE");
+		COLOR_NAMES.add("RED");
+		COLOR_NAMES.add("ROSYBROWN");
+		COLOR_NAMES.add("ROYALBLUE");
+		COLOR_NAMES.add("SADDLEBROWN");
+		COLOR_NAMES.add("SALMON");
+		COLOR_NAMES.add("SANDYBROWN");
+		COLOR_NAMES.add("SEAGREEN");
+		COLOR_NAMES.add("SEASHELL");
+		COLOR_NAMES.add("SIENNA");
+		COLOR_NAMES.add("SILVER");
+		COLOR_NAMES.add("SKYBLUE");
+		COLOR_NAMES.add("SLATEBLUE");
+		COLOR_NAMES.add("SLATEGRAY");
+		COLOR_NAMES.add("SLATEGREY");
+		COLOR_NAMES.add("SNOW");
+		COLOR_NAMES.add("SPRINGGREEN");
+		COLOR_NAMES.add("STEELBLUE");
+		COLOR_NAMES.add("TAN");
+		COLOR_NAMES.add("TEAL");
+		COLOR_NAMES.add("THISTLE");
+		COLOR_NAMES.add("TOMATO");
+		COLOR_NAMES.add("TURQUOISE");
+		COLOR_NAMES.add("VIOLET");
+		COLOR_NAMES.add("WHEAT");
+		COLOR_NAMES.add("WHITE");
+		COLOR_NAMES.add("WHITESMOKE");
+		COLOR_NAMES.add("YELLOW");
+		COLOR_NAMES.add("YELLOWGREEN");
 	}
 }

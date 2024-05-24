@@ -107,7 +107,7 @@ public class Main extends Application {
          Pointer currentPointer;
 Pointer cursor1 = new Pointer(gc);
 		int cursor1Index = 0;
-		currentPointer = cursor1;
+		 currentPointer = cursor1 ; 
 		 currentPointer.turnRight( 40 ); 
 		 currentPointer.fwd( 100 ); 
 		 currentPointer.turnRight( 10 ); 

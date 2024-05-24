@@ -86,6 +86,14 @@ public class Pointer {
 
     //public Color setColor(int c) {return colors[c];}
 
+    /**
+     * this function define how it forward of 1
+     *
+     * @param pointsX horizontal position
+     * @param pointsY vertical position
+     * @param value
+     * @param direction
+     */
     public void doodleTracker(double[] pointsX, double[] pointsY, double value, double direction) {
         AnimationTimer timer = new AnimationTimer() {
             int count = 0;
@@ -97,9 +105,9 @@ public class Pointer {
                 pointsX[0] = pointsX[1];
                 pointsY[0] = pointsY[1];
                 if (value < 0) {
-                    pointsX[1] -= deltaX;
+                    pointsX[1] -= deltaX;   //backward if value is negative
                     pointsY[1] -= deltaY;
-                } else {
+                } else {                //forward if it is positive
                     pointsX[1] += deltaX;
                     pointsY[1] += deltaY;
                 }
@@ -123,29 +131,36 @@ public class Pointer {
         timer.start();
     }
 
+    /**
+     * the function that will make the cursor forward
+     *
+     * @param value the value the cursor forward
+     */
     public void fwd(double value) {
-        //System.out.println("DemarrageD");
         System.out.println("Position initiale : (" + pos_x + ", " + pos_y + ")");
         double x1 = this.pos_x;
         double y1 = this.pos_y;
         double[] pointsX = {x1, x1};
         double[] pointsY = {y1, y1};
-        doodleTracker(pointsX,pointsY,value,direction);
-        //System.out.println("En attente");
+        doodleTracker(pointsX,pointsY,value,direction);         //define what it does if forward of 1
 
-        pos_x += value * Math.cos(direction * Math.PI / 180);
-        pos_y += value * Math.sin(direction * Math.PI / 180);
+        pos_x += value * Math.cos(direction * Math.PI / 180);       //horizontal part
+        pos_y += value * Math.sin(direction * Math.PI / 180);       //vertical part
         System.out.println("Position finale : (" + pos_x + ", " + pos_y + ")");
-        //System.out.println("Fin");
-        //System.out.println("valeur onAction f:" + onAction);
     }
-    public void bwd(int value){
-        fwd(-1*value);
-    }
+
+    /**
+     * this function make the cursor go backward
+     * @param value value the cursor backward
+     */
     public void bwd(double value){
         fwd(-1*value);
     }
 
+    /**
+     * the cursor turn in the clockwise
+     * @param i value in degree it turns
+     */
     public void turnRight(int i){
         direction-=i;
     }
@@ -153,6 +168,10 @@ public class Pointer {
         direction-= (int) i;
     }
 
+    /**
+     * turn in the trigonometric sense
+     * @param i value in degree it turns
+     */
     public void turnLeft(int i){
         direction+=i;
     }
@@ -160,11 +179,21 @@ public class Pointer {
         direction+= (int) i;
     }
 
+    /**
+     * this function make the cursor move to a position without drawing
+     * @param x
+     * @param y
+     */
     public void pos(double x, double y){
         pos_x=x;
         pos_y=y;
     }
 
+    /**
+     * make the cursor move of x in horizontal and y in vertical with drawing
+     * @param x value of the horizontal forward
+     * @param y value of the vertical forward
+     */
     public void move(double x, double y) {
         double newXpoint = pos_x +x;
         double newYpoint = pos_y +y;
@@ -173,22 +202,43 @@ public class Pointer {
         fwd(distance);
     }
 
-
+    /**
+     * change the direction to make the cursor go to th point if it forwards
+     * @param x
+     * @param y
+     */
     public void lookat(double x, double y){
         direction = Math.toDegrees(Math.atan2(y - pos_y, x - pos_x));
     }
+
+    /**
+     * hide the cursor
+     */
     public void hide(){
         is_shown = false;
     }
 
+    /**
+     * show the cursor
+     */
     public void show(){
         is_shown = true;
     }
 
+    /**
+     * change the color with a rgb code
+     * @param red
+     * @param green
+     * @param blue
+     */
     public void setColor(int red, int green, int blue){
 
     }
 
+    /**
+     * change the color with a hexadcimal code
+     * @param hexadecimal
+     */
     public void setColor(String hexadecimal){}
 
 

@@ -30,7 +30,7 @@ public class Interpreter {
 		put("INT\\s+", new String[]{"int ",";"});
 		put("STR\\s+", new String[]{"String ",";"});
 		put("BOOL\\s+", new String[]{"boolean ",";"});
-		put("DEL\\s+", new String[]{""," = null;"});
+		put("DEL\\s+", new String[]{"// "," = null;"}); // primitive type cannot point on null, so it cannot be "deleted" at all, even by simulating it
 		put("IF\\s+", new String[]{"if(", "){"});
 		put("WHILE\\s+", new String[]{"while(", "){"});
 		put("MIRROR\\s+", new String[]{"mirror(", "){ // temporary "});
@@ -76,6 +76,7 @@ public class Interpreter {
 		String removed = "";
 		List<String> functionPile = new ArrayList<>();
 		List<String> mimicPile = new ArrayList<>();
+		Set<String> nullVariables = new HashSet<>();						// to store the "removed" variable (that point to null instead), to allow to just assign them a new value if used again, and not redeclare them (which would do an error)
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
 		cyCode = cyCode.replaceAll("\\}", "\n" + indentation + "}\n");		// skip line next to } to prevent having code on the same line as a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));			// separate in a list of lines
@@ -112,26 +113,60 @@ public class Interpreter {
 								newJavaLine += "try{\n" + indentation;
 							}
 						}
-
-						if (!(preventSELECT != 0 && key.contains("SELECT"))) {
+													// loop if is for all cases except FOR MIMIC ENDMIMIC MIRROR ENDMIRROR and CURSOR
+						if (!(preventSELECT != 0 && key.contains("SELECT"))) {    // if the usage of select is allowed
 							String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
 							int i = 0;
 							String[] template = keywords.get(key);
 
-							for (String input : inputs) {                       // for each part, put it in the equivalent java line, with the template
-								input = convert(key, i, input, ignoreError);    // convert percentage to px, set undefined variable, set hexadecimal code as String, ...
-								newJavaLine += input + " " + template[i] + " ";
-								i++;
+							boolean isVariable = key.contains("NUM") || key.contains("STR") || key.contains("INT") || key.contains("BOOL");
+							String variableName = " ";
+
+							if (isVariable) { 									// if the command is a variable declaration, we need the variable name to see if it is already declared or not (because the input can be '<variableName>' but also '<variableName> = 15.4')
+								Pattern patternInput = Pattern.compile("\\s*([a-zA-Z_]\\w*)\\s+.+"); // get the name if the input is the name plus an assignation
+								Matcher matcherInput = patternInput.matcher(inputs[1]);
+								if (matcherInput.find() && matcherInput.groupCount() == 1) {
+									variableName = matcherInput.group(1);
+								} else {
+									patternInput = Pattern.compile("\\s*([a-zA-Z_]\\w*)\\s*"); // get the name if the input is just the name
+									matcherInput = patternInput.matcher(inputs[1]);
+									if (matcherInput.find() && matcherInput.groupCount() == 1) {
+										variableName = matcherInput.group(1);
+									} else {
+										variableName = inputs[1];
+									}
+								}
+							}
+
+
+							if (!isVariable || !nullVariables.contains(variableName)) { // if the command is the declaration of a new variable or another command
+								for (String input : inputs) {                       // for each part, put it in the equivalent java line, with the template
+									input = convert(key, i, input, ignoreError);    // convert percentage to px, set undefined variable to 0/""/false , put hexadecimal code in a String, ...
+									newJavaLine += input + " " + template[i] + " ";
+									i++;
+								}
+								if (isVariable) {
+									nullVariables.add(variableName);
+									System.out.println(Arrays.toString(inputs));
+								}
+							} else { // if the command is the declaration of a variable that has already been declared but "removed" (i.e. it now points on null, and must only be assigned)
+								newJavaLine = indentation + inputs[0] + convert(key, 1, inputs[1], ignoreError) + template[1];
+								nullVariables.remove(variableName);
+								System.out.println("test");
+							}
+
+							if (key.contains("REMOVE") || key.contains("DEL")){
+								nullVariables.add(inputs[1]);
 							}
 
 							key2 = key;
 							patternFound = true;
 							break;
-						}else{
-							if (!ignoreError) {									// if there is a select inside a mimic or a mirror
-								throw new IllegalArgumentException("Usage of select is restricted inside mimic and mirror loop"); // if errors are not ignored, throw an error
+						}else{													// if there is a select inside a mimic or a mirror
+							if (!ignoreError) { 								// if errors are not ignored, throw an error
+								throw new IllegalArgumentException("Usage of select is restricted inside mimic and mirror loop");
 							}
-							patternFound = true;								// if errors aren't ignored, the pattern has been found
+							patternFound = true;								// if errors are ignored, the pattern has been found nonetheless
 							break;
 						}
 
@@ -232,8 +267,14 @@ public class Interpreter {
 
                     }else {
 						key2 = key;
-						newJavaLine = indentation + "Pointer "+ matcher.group(1) +" = new Pointer(gc);\n" +
-								indentation + "int " + matcher.group(1) + "Index = 0;";
+						if (!nullVariables.contains(matcher.group(1))) { 		// if the cursor has never been used, declare it
+							newJavaLine = indentation + "Pointer " + matcher.group(1) + " = new Pointer(gc);\n" +
+									indentation + "int " + matcher.group(1) + "Index = 0;";
+						} else {												// if the cursor have already been used, but was "removed" and point on null, just assign it a new value
+							newJavaLine = indentation + matcher.group(1) + " = new Pointer(gc);\n" +
+									indentation + matcher.group(1) + "Index = 0;";
+							nullVariables.remove(matcher.group(1));
+						}
 						patternFound = true;
 						break;
 					}

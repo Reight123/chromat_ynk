@@ -26,6 +26,7 @@ public class Interpreter {
 		put("THICK\\s+", new String[]{"currentPointer.setThickness(",");"});
 		put("COLOR\\s+", new String[]{"currentPointer.setColor(", ");"});
 		put("LOOKAT\\s+", new String[]{"currentPointer.lookat(",");"});
+		put("MATH\\s+", new String[]{"",";"});
 		put("NUM\\s+", new String[]{"double ",";"});
 		put("INT\\s+", new String[]{"int ",";"});
 		put("STR\\s+", new String[]{"String ",";"});
@@ -147,12 +148,10 @@ public class Interpreter {
 								}
 								if (isVariable) {
 									nullVariables.add(variableName);
-									System.out.println(Arrays.toString(inputs));
 								}
 							} else { // if the command is the declaration of a variable that has already been declared but "removed" (i.e. it now points on null, and must only be assigned)
 								newJavaLine = indentation + inputs[0] + convert(key, 1, inputs[1], ignoreError) + template[1];
 								nullVariables.remove(variableName);
-								System.out.println("test");
 							}
 
 							if (key.contains("REMOVE") || key.contains("DEL")){

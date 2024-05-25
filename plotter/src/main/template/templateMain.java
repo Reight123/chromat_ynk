@@ -28,7 +28,7 @@ public class Main extends Application {
     private Canvas canvas;
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) { /*setup the drawing page*/
         primaryStage.setTitle("Votre dessin");
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
         primaryStage.setX(1050);
@@ -67,7 +67,7 @@ public class Main extends Application {
         // TODO add a button to begin the drawing, and another to delete the drawing and draw it again
     }
 
-    private void addButtons(VBox vbox) {
+    private void addButtons(VBox vbox) { /*button for editing drawing page*/
         Button nextButton = new Button("Etape suivante");
         nextButton.getStyleClass().add("buttondraw");
 
@@ -104,7 +104,7 @@ public class Main extends Application {
         }
     }
 
-    private void saveDrawing() {
+    private void saveDrawing() { /*save the drawing*/
         WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
         canvas.snapshot(null, writableImage);
 
@@ -116,7 +116,7 @@ public class Main extends Application {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) { //launch the program
         launch();
     }
 }

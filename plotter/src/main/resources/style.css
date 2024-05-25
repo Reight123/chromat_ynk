@@ -1,9 +1,9 @@
 .boxdraw {
-    -fx-padding: 20px 0px 0px 150px;
+    -fx-padding: 15px 0px 0px 120px;
 }
 
 .buttondraw {
-    -fx-min-width: 245px;
+    -fx-min-width: 180px;
     -fx-background-color: #ed2e2e;
     -fx-border: none;
     -fx-color: white;

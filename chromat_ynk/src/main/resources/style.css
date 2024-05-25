@@ -1,19 +1,19 @@
-.root {
+.root { /*color background*/
     -fx-background-color: #bdd3ef;
     -fx-min-width: 1918px;
     -fx-min-height: 1078px;
 }
 
-.box {
+.box { /*line*/
     -fx-alignment: top-left;
     -fx-padding: 0px 0px 0px 20px;
 }
 
-.subbox {
+.subbox { /*command box*/
     -fx-padding: 0px 0px 30px 0px;
 }
 
-.gbox {
+.gbox { /*error box*/
     -fx-background-color: #dedede;
     -fx-max-width: 800px;
     -fx-border: solid ;
@@ -22,7 +22,7 @@
     -fx-font-size: 14px;
 }
 
-.button {
+.button { /*button menu*/
     -fx-min-width: 160px;
     -fx-background-color: #ed2e2e;
     -fx-border: none;
@@ -39,7 +39,7 @@
     -fx-cursor: hand;
 }
 
-.sbutton {
+.sbutton { /*launch button*/
     -fx-min-width: 50px;
     -fx-background-color: #ed2e2e;
     -fx-border: none;
@@ -56,7 +56,7 @@
     -fx-cursor: hand;
 }
 
-.buttonmodif {
+.buttonmodif { /*command button*/
     -fx-min-width: 60px;
     -fx-min-height: 50px;
     -fx-background-color: #ed2e2e;
@@ -68,7 +68,7 @@
     -fx-cursor: pointer;
 }
 
-.choice {
+.choice { /*command button*/
     -fx-min-width: 170px;
     -fx-min-height: 50px;
     -fx-background-color: #ffc2c2;
@@ -87,7 +87,7 @@
     -fx-cursor: hand;
 }
 
-.value {
+.value { /*command button*/
     -fx-min-width: 400px;
     -fx-min-height: 50px;
     -fx-background-color: #ffc2c2;
@@ -106,7 +106,7 @@
     -fx-cursor: hand;
 }
 
-.thumb {
+.thumb { /*scrollbar*/
     -fx-background-color: #ed2e2e;
     -fx-background-insets: 0;
     -fx-background-radius: 10px;
@@ -117,7 +117,7 @@
     -fx-cursor: hand;
 }
 
-.slider .track {
+.slider .track { /*speed cursor*/
     -fx-background-color: #E0E0E0;
     -fx-padding: 0.25em;
     -fx-background-radius: 0.25em;

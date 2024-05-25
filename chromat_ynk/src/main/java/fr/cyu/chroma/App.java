@@ -1,7 +1,6 @@
 package fr.cyu.chroma;
 
-import javafx.application.Application;
-import javafx.collections.FXCollections;
+import javafx.application.Application; //import libraries
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -22,8 +21,6 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
@@ -36,8 +33,6 @@ public class App extends Application {
     private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "ENDBLOCK", "MIMICEND", "ENDMIRROR", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
-    private int drawingWindowWidth = 800;
-    private int drawingWindowHeight = 800;
     private double sliderValue = 50;
     private boolean errorGestion = false;
     /**
@@ -67,7 +62,7 @@ public class App extends Application {
 
         addButtons(vbox); //add the button of the menu
 
-        ChoiceBox<String> choiceBox = new ChoiceBox<>(); //setup the first command lign
+        ChoiceBox<String> choiceBox = new ChoiceBox<>(); //setup the first command line
         choiceBox.getStyleClass().add("choice");
         choiceBox.setItems(choices);
         choiceBoxes.add(choiceBox);
@@ -332,7 +327,7 @@ public class App extends Application {
 
         if (!fileContent.isEmpty()) {
             try {
-                Interpreter interpreter = new Interpreter(this.drawingWindowWidth, this.drawingWindowHeight);
+                Interpreter interpreter = new Interpreter(800, 800);
                 javaCode = interpreter.decode(fileContent, errorGestion);              //turn the selected file into a java script
                 File templateFile = new File("../plotter/src/main/template/templateMain.java");
                 String temp = getFileContent(templateFile);

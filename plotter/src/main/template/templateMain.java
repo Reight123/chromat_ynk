@@ -37,17 +37,6 @@ public class Main extends Application {
         primaryStage.setAlwaysOnTop(true);
         primaryStage.setResizable(false);
 
-        primaryStage.xProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.equals(1050.0)) {
-                primaryStage.setX(1050);
-            }
-        });
-        primaryStage.yProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.equals(125.0)) {
-                primaryStage.setY(125);
-            }
-        });
-
         canvas = new Canvas(800, 800);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         Pointer currentPointer = new Pointer(gc);

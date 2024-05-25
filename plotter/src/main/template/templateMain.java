@@ -2,18 +2,18 @@ package fr.cyu.chroma;
 
 import javafx.application.Application;
 import javafx.animation.TranslateTransition;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javax.imageio.ImageIO;
@@ -23,12 +23,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static javafx.collections.FXCollections.observableArrayList;
 
 public class Main extends Application {
     private Canvas canvas;
-
+    private GraphicsContext gc;
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) { /*setup the drawing page*/
         primaryStage.setTitle("Votre dessin");
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
         primaryStage.setX(1050);
@@ -37,19 +40,9 @@ public class Main extends Application {
         primaryStage.setAlwaysOnTop(true);
         primaryStage.setResizable(false);
 
-        primaryStage.xProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.equals(1050.0)) {
-                primaryStage.setX(1050);
-            }
-        });
-        primaryStage.yProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.equals(125.0)) {
-                primaryStage.setY(125);
-            }
-        });
-
         canvas = new Canvas(800, 800);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc = canvas.getGraphicsContext2D();
+        fillCanvas(gc, Color.WHITE);
         Pointer currentPointer = new Pointer(gc);
         Pointer updatePointer = new Pointer(gc);
 
@@ -78,17 +71,76 @@ public class Main extends Application {
         // TODO add a button to begin the drawing, and another to delete the drawing and draw it again
     }
 
-    private void addButtons(VBox vbox) {
+    private void fillCanvas(GraphicsContext gc, Color color) {
+        gc.setFill(color);
+        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    }
+
+
+    private void addButtons(VBox vbox) { /*button for editing drawing page*/
         Button nextButton = new Button("Etape suivante");
         nextButton.getStyleClass().add("buttondraw");
+
+        Button changeColorButton = new Button("Blanc");
+        changeColorButton.getStyleClass().add("buttondraw");
+        AtomicReference<Color> color = new AtomicReference<>(Color.WHITE);
+        changeColorButton.setOnAction(e -> {
+            switch (changeColorButton.getText()) {
+                case "Blanc":
+                    color.set(Color.RED);
+                    changeColorButton.setText("Rouge");
+                    break;
+                case "Rouge":
+                    color.set(Color.BLUE);
+                    changeColorButton.setText("Bleu");
+                    break;
+                case "Bleu":
+                    color.set(Color.VIOLET);
+                    changeColorButton.setText("Violet");
+                    break;
+                case "Violet":
+                    color.set(Color.YELLOW);
+                    changeColorButton.setText("Jaune");
+                    break;
+                case "Jaune":
+                    color.set(Color.GREEN);
+                    changeColorButton.setText("Vert");
+                    break;
+                case "Vert":
+                    color.set(Color.ORANGE);
+                    changeColorButton.setText("Orange");
+                    break;
+                case "Orange":
+                    color.set(Color.BROWN);
+                    changeColorButton.setText("Marron");
+                    break;
+                case "Marron":
+                    color.set(Color.BLACK);
+                    changeColorButton.setText("Noir");
+                    break;
+                case "Noir":
+                    color.set(Color.WHITE);
+                    changeColorButton.setText("Blanc");
+                    break;
+            }
+            fillCanvas(gc, color.get());
+            commands(gc);
+        });
 
         Button saveDrawingButton = new Button("Enregistrer ce dessin");
         saveDrawingButton.getStyleClass().add("buttondraw");
         saveDrawingButton.setOnAction(event -> saveDrawing());
 
+        Label reDraw = new Label("\u25B6");
+        reDraw.getStyleClass().add("sbuttondraw");
+        reDraw.setOnMouseClicked(event -> {
+            fillCanvas(gc, color.get());
+            commands(gc);
+        });
+
         HBox buttonBox = new HBox(10);
         buttonBox.getStyleClass().add("boxdraw");
-        buttonBox.getChildren().addAll(nextButton, saveDrawingButton);
+        buttonBox.getChildren().addAll(nextButton, saveDrawingButton, changeColorButton,reDraw);
         vbox.getChildren().add(buttonBox);
     }
 
@@ -115,7 +167,7 @@ public class Main extends Application {
         }
     }
 
-    private void saveDrawing() {
+    private void saveDrawing() { /*save the drawing*/
         WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
         canvas.snapshot(null, writableImage);
 
@@ -127,7 +179,7 @@ public class Main extends Application {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) { //launch the program
         launch();
     }
 }

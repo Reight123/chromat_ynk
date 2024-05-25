@@ -21,6 +21,8 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
@@ -313,7 +315,7 @@ public class App extends Application {
 
     /**
      * execute the selected file
-     * @param selectedFile the file wich will be execute
+     * @param selectedFile the file wich will be executed
      */
     private void executeFile(File selectedFile) {
         if (selectedFile == null) {
@@ -389,8 +391,9 @@ public class App extends Application {
         }
     }
 
+
     /**
-     * write the content in a .java file
+     * write the content in the Main.java file
      * @param fileContent the content it will put in the file
      */
     private void writeJavaFile(String fileContent) {
@@ -402,12 +405,38 @@ public class App extends Application {
         }
     }
 
+
+
+
     /**
      * execute the current script when the user clicks on the run button
-     * @param appInstance
-     * @param messageBox
+     * @param error the error line that just have been written in errorMessage
+     * @param errorMessages error message that will be written in the VBox messageBox to be displayed to the user
      */
-    private static void run(App appInstance, VBox messageBox) {
+    private void mainLine(String error, ObservableList<String> errorMessages){
+        try {
+            String pattern = "Main.java:\\[(\\d+),(\\d+)]";                     // pattern to recognize when the error refer to a line in Main.java
+            Pattern regex = Pattern.compile(pattern);
+            Matcher matcher = regex.matcher(error);
+            if (matcher.find() && matcher.groupCount() == 2) {                  // if the pattern is found
+                File file = new File("../plotter/src/main/java/fr/cyu/chroma/Main.java");
+                String fileContent = getFileContent(file);                      // get the content of the Main.java file
+                String[] lines = fileContent.split("\n");                   // split it to obtain a list of the lines
+                int lineNumber = Integer.parseInt(matcher.group(1));            // get the line that the error refer to
+                errorMessages.add(matcher.group(0) + " : " + lines[lineNumber]); // add the line to the error message
+            }
+        } catch (Exception ignored){}
+    }
+
+
+
+
+    /**
+     * execute the current script when the user clicks on the run button
+     * @param appInstance the reference of the main thread, needed to update the message box in it
+     * @param messageBox box where the error must be written so that the user can read them
+     */
+    private void run(App appInstance, VBox messageBox) {
         try {
             String pathPlotter = "../plotter/pom.xml";
             String osName = System.getProperty("os.name").toLowerCase();
@@ -441,10 +470,12 @@ public class App extends Application {
                         errorMessages.add("Call of a function, but no cursor was selected");
                     } else {
                         errorMessages.add(error);
+                        mainLine(error, errorMessages);
                     }
                 }
                 if (error.contains("Failed to execute goal")) {          // when the error explains what is th pb, start printing it
                     errorMessages.add(error);
+                    mainLine(error, errorMessages);
                     interestingPart = true;
                 }
             }

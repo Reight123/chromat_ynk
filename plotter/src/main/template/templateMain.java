@@ -163,8 +163,8 @@ public class Main extends Application {
         if (currentPointer != null) {
             return currentPointer;
         } else {
-            return new Pointer(gc); // if the user don't select a pointer, return a new one to not crash the program
-        }
+            return new Pointer(gc);
+        } // if the user don't select a pointer, return a new one to not crash the program
     }
 
     private void saveDrawing() { /*save the drawing*/

@@ -1,5 +1,5 @@
 .boxdraw {
-    -fx-padding: 15px 0px 0px 120px;
+    -fx-padding: 15px 0px 0px 80px;
 }
 
 .buttondraw {
@@ -11,9 +11,27 @@
     -fx-padding: 10px 20px;
     -fx-font-size: 14px;
     -fx-cursor: pointer;
+    -fx-background-radius: 10px;
 }
 
 .buttondraw:hover {
+    -fx-background-color: #b50000;
+    -fx-cursor: hand;
+}
+
+.sbuttondraw {
+    -fx-min-width: 50px;
+    -fx-background-color: #ed2e2e;
+    -fx-border: none;
+    -fx-color: white;
+    -fx-text-fill: white;
+    -fx-padding: 10px 20px;
+    -fx-font-size: 14px;
+    -fx-cursor: pointer;
+    -fx-background-radius: 10px;
+}
+
+.sbuttondraw:hover {
     -fx-background-color: #b50000;
     -fx-cursor: hand;
 }

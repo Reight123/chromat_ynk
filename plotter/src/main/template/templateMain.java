@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
@@ -130,9 +131,16 @@ public class Main extends Application {
         saveDrawingButton.getStyleClass().add("buttondraw");
         saveDrawingButton.setOnAction(event -> saveDrawing());
 
+        Label reDraw = new Label("\u25B6");
+        reDraw.getStyleClass().add("sbuttondraw");
+        reDraw.setOnMouseClicked(event -> {
+            fillCanvas(gc, color.get());
+            commands(gc);
+        });
+
         HBox buttonBox = new HBox(10);
         buttonBox.getStyleClass().add("boxdraw");
-        buttonBox.getChildren().addAll(nextButton, saveDrawingButton, changeColorButton);
+        buttonBox.getChildren().addAll(nextButton, saveDrawingButton, changeColorButton,reDraw);
         vbox.getChildren().add(buttonBox);
     }
 

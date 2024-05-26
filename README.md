@@ -79,6 +79,7 @@ However, the functions might be named slightly differently in Java. Here is the 
 
 - CURSOR
 - SELECT
+- SPEED
 - REMOVE
 
 

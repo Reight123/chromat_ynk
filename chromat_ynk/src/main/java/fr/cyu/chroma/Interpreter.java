@@ -12,6 +12,7 @@ public class Interpreter {
 	private final Map<String, String[]> keywords = new HashMap<>() {{		// create a map, with a regex expression to find keywords and isolate what is before and after, and the associated template
 		put("CURSOR\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});				// separate the template in several parts, to put the inputs afterward
 		put("SELECT\\s+", new String[]{"currentPointer =", ";"});			// for commands that apply to the previously selected pointer, apply the change to the currentPointer instance
+		put("SPEED\\s+", new String[]{" speedSlider = ", ";"});
 		put("REMOVE\\s+", new String[]{"", " = null;"});
 		put("FWD\\s+", new String[]{"currentPointer.fwd(", ");"});
 		put("BWD\\s+", new String[]{"currentPointer.bwd(", ");"});
@@ -82,9 +83,8 @@ public class Interpreter {
 	 * @throws IllegalArgumentException If there is an illegal argument passed to the function
 	 */
 	public String decode(String cyCode, boolean ignoreError) throws IllegalArgumentException, IllegalStateException{
-		App app = new App();
 		String indentation = "\t\t";
-		String javaCode = " Pointer currentPointer";						// currentPointer must be declared because the user won't do it
+		String javaCode = " Pointer currentPointer = new Pointer(gc);\n" + indentation +"currentPointer.setSpeed(speedSlider)";						// currentPointer must be declared because the user won't do it
 		if (ignoreError){javaCode+=" = null;";}else{javaCode+=";";}			// if the instruction will be surrounded by try catch, add "= null" to detect the error, if not don't add it, or it will crash
 		int preventSELECT = 0;
 		String removed = "";
@@ -370,7 +370,7 @@ public class Interpreter {
 						if (!nullVariables.contains(matcher.group(1))) { 		// if the cursor has never been used, declare it
 							newJavaLine = indentation + "Pointer " + matcher.group(1) + " = new Pointer(gc);\n" +
 									indentation + "int " + matcher.group(1) + "Index = 0;\n" +
-                                    indentation + matcher.group(1) +".setSpeed(" + app.sliderValue +");";
+                                    indentation + matcher.group(1) +".setSpeed(speedSlider);";
 						} else {												// if the cursor have already been used, but was "removed" and point on null, just assign it a new value
 							newJavaLine = indentation + matcher.group(1) + " = new Pointer(gc);\n" +
 									indentation + matcher.group(1) + "Index = 0;";

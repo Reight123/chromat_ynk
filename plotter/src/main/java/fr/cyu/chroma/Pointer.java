@@ -21,7 +21,7 @@ public class Pointer {
     private int onAction = 0;
     private boolean animationEnCours = false;
     private Circle cursor;
-    private int speed;
+    private int speed=20;
 
     private final GraphicsContext gc;
 
@@ -78,20 +78,16 @@ public class Pointer {
 
     public void setThickness(double thick) { this.thick = thick; }
     public void setSpeed(double speedSlider) {
-        switch ((int) speedSlider) {
-            case 100:
-                this.speed = 0;
-                break;
-            case 50:
-                this.speed = 10;
-                break;
-            case 0:
-                this.speed = 40;
-                break;
-            default:
-                System.out.println("Invalid speed value: " + speed);
-                break;
-        }
+        if(speedSlider >= 90) this.speed = 0;
+        else if(speedSlider >= 80) this.speed = 5;
+        else if(speedSlider >= 70) this.speed = 10;
+        else if(speedSlider >= 60) this.speed = 15;
+        else if(speedSlider >= 50) this.speed = 20;
+        else if(speedSlider >= 40) this.speed = 25;
+        else if(speedSlider >= 30) this.speed = 30;
+        else if(speedSlider >= 20) this.speed = 35;
+        else if(speedSlider >= 10) this.speed = 40;
+        else this.speed = 50;
     }
 
     public String toString() {

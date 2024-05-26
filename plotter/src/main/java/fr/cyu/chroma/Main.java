@@ -169,6 +169,7 @@ public class Main extends Application {
         Pointer symmetryPointer = null;
         Pointer targetStart;
         int k=0,indexMirror=0,orientation=1;
+        double speedSlider = 50;
         temp.add(tempPointer);
         target.add(targetPointer);
         mirrorList.add(tempMirrorPointer);
@@ -176,68 +177,14 @@ public class Main extends Application {
         oldmirrorList.add(new ArrayList<>(mirrorList));
 
 
-         Pointer currentPointer;
-		Pointer c1 = new Pointer(gc);
-		int c1Index = 0;
-		c1.setSpeed(100.0);
-		 currentPointer = c1 ; 
-		 currentPointer.pos( 300,400 ); 
-		tempMirrorPointer = new Pointer(gc);
-		symmetryPointer = new Pointer(gc);
-		tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
-		tempMirrorPointer.setDirection(currentPointer.getDirection());
-		symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());
-		symmetryPointer.setDirection(tempMirrorPointer.getDirection());
-		symmetryPointer.getPosMirror(320,300,420,300);
-		mirrorList.set(0,tempMirrorPointer);
-		mirrorList.set(1,symmetryPointer);
-		oldmirrorList.add(new ArrayList<>(mirrorList));
-		for(indexMirror = 0;  indexMirror <2; indexMirror++){
-			oldIndex.add(indexMirror);
-		orientation = (indexMirror == 0) ? 1 : -1;
-		currentPointer = mirrorList.get(indexMirror);
-		
-		
-		tempMirrorPointer = new Pointer(gc);
-		symmetryPointer = new Pointer(gc);
-		tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
-		tempMirrorPointer.setDirection(currentPointer.getDirection());
-		symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());
-		symmetryPointer.setDirection(tempMirrorPointer.getDirection());
-		symmetryPointer.getPosMirror(420,500,420,300);
-		mirrorList.set(0,tempMirrorPointer);
-		mirrorList.set(1,symmetryPointer);
-		oldmirrorList.add(new ArrayList<>(mirrorList));
-		for(indexMirror = 0;  indexMirror <2; indexMirror++){
-			oldIndex.add(indexMirror);
-		orientation = (indexMirror == 0) ? 1 : -1;
-		currentPointer = mirrorList.get(indexMirror);
-		
-		 currentPointer.setThickness( 2 ); 
-		 currentPointer.fwd( 50 ); 
-		 currentPointer.turnLeft( 90 *orientation); 
-		 currentPointer.setThickness( 3 ); 
-		 currentPointer.fwd( 50 ); 
-		 currentPointer.turnLeft( 90 *orientation); 
-		 currentPointer.fwd( 50 ); 
-		
-		
-		
-		indexMirror = oldIndex.get(oldIndex.size()-1);
-		oldIndex.remove(oldIndex.size()-1);
-		}
-		oldmirrorList.remove(oldmirrorList.size() - 1);
-		mirrorList = oldmirrorList.get(oldmirrorList.size() - 1);
-
-		
-		
-		
-		indexMirror = oldIndex.get(oldIndex.size()-1);
-		oldIndex.remove(oldIndex.size()-1);
-		}
-		oldmirrorList.remove(oldmirrorList.size() - 1);
-		mirrorList = oldmirrorList.get(oldmirrorList.size() - 1);
-
+         Pointer currentPointer = new Pointer(gc);
+		currentPointer.setSpeed(speedSlider);
+		  speedSlider =  0.0 ; 
+		Pointer c = new Pointer(gc);
+		int cIndex = 0;
+		c.setSpeed(speedSlider);
+		 currentPointer = c ; 
+		 currentPointer.fwd( 500 ); 
 
         if (currentPointer != null) {
             return currentPointer;

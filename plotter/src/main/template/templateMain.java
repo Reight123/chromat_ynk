@@ -33,6 +33,12 @@ public class Main extends Application {
     private Canvas canvas;
     private GraphicsContext gc;
     private boolean notEmpty = false;
+
+    /**
+     * Sets up the drawing page with the specified primaryStage.
+     *
+     * @param primaryStage The primary stage for the application.
+     */
     @Override
     public void start(Stage primaryStage) { /*setup the drawing page*/
         primaryStage.setTitle("Votre dessin");
@@ -82,12 +88,25 @@ public class Main extends Application {
         // TODO add a button to begin the drawing, and another to delete the drawing and draw it again
     }
 
+    /**
+     * Fills the canvas with the specified color using the provided GraphicsContext.
+     *
+     * @param gc    The GraphicsContext object used for drawing
+     * @param color The color
+     */
     private void fillCanvas(GraphicsContext gc, Color color) {
         gc.setFill(color);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
-
+    /**
+     * Adds buttons for editing the drawing page.
+     * Contains a button for changing the color to white and cycling through other colors,
+     * A save button for saving the drawing
+     * A re-draw button for redrawing the canvas.
+     *
+     * @param vbox The VBox to which the buttons will be added.
+     */
     private void addButtons(VBox vbox) { /*button for editing drawing page*/
         Button nextButton = new Button("Etape suivante");
         nextButton.getStyleClass().add("buttondraw");
@@ -156,8 +175,15 @@ public class Main extends Application {
     }
 
 
+    /**
+     * The function that actually draw. Contains declarations for all usages
+     * Commands wrote by the user will be written inside
+     *
+     * @param gc The GraphicsContext object used for drawing.
+     * @return The last used Pointer, to know its position.
+     */
     private Pointer commands(GraphicsContext gc) {
-        List<Pointer> liste = new ArrayList<>();
+        List<Pointer> liste = new ArrayList<>(); // necessary objects to use methods such as mimic and mirror
         List<Pointer> mirrorList = new ArrayList<>();
         List<List<Pointer>> oldliste = new ArrayList<>();
         List<List<Pointer>> oldmirrorList = new ArrayList<>();
@@ -170,13 +196,14 @@ public class Main extends Application {
         Pointer symmetryPointer = null;
         Pointer targetStart;
         int k=0,indexMirror=0,orientation=1;
-        double speedSlider = 50;
+        double speedSlider = 100;
         temp.add(tempPointer);
         target.add(targetPointer);
         mirrorList.add(tempMirrorPointer);
         mirrorList.add(symmetryPointer);
         oldmirrorList.add(new ArrayList<>(mirrorList));
 
+        // the commnds written by the user and translated by the interpreter will be written here
 
         //insertion area do not delete//
 
@@ -187,6 +214,12 @@ public class Main extends Application {
         } // if the user don't select a pointer, return a new one to not crash the program
     }
 
+    /**
+     * Saves the current drawing as an image file.
+     * If the drawing is not empty, it creates a snapshot of the canvas and saves it as a PNG file named "Votre_dessin.png"
+     * in the "../drawing" directory relative to the current working directory.
+     * If the drawing is empty, it displays a popup window indicating that the drawing is empty.
+     */
     private void saveDrawing() { /*save the drawing*/
         if(this.notEmpty) {
             WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
@@ -203,6 +236,11 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * Displays a popup window indicating that the drawing is empty.
+     * The popup window is set to always stay on top of other windows, and it blocks interactions with other windows until closed.
+     *
+     */
     private void showEmptyDrawingPopup() {
         Stage popupStage = new Stage();
         popupStage.setTitle("Dessin Vide");

@@ -18,7 +18,7 @@ public class Pointer {
     private int onAction = 0;
     private boolean animationEnCours = false;
     private Circle cursor;
-    private int speed=20;
+    private int speed=0;
 
     private final GraphicsContext gc;
 

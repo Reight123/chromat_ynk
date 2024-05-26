@@ -457,7 +457,7 @@ public class App extends Application {
                 String fileContent = getFileContent(file);                      // get the content of the Main.java file
                 String[] lines = fileContent.split("\n");                   // split it to obtain a list of the lines
                 int lineNumber = Integer.parseInt(matcher.group(1));            // get the line that the error refer to
-                errorMessages.add(matcher.group(0) + " : " + lines[lineNumber]); // add the line to the error message
+                errorMessages.add(matcher.group(0) + " : " + lines[lineNumber-1]); // add the line to the error message
             }
         } catch (Exception ignored){}
     }

@@ -15,9 +15,9 @@ public class Interpreter {
 		put("REMOVE\\s+", new String[]{"", " = null;"});
 		put("FWD\\s+", new String[]{"currentPointer.fwd(", ");"});
 		put("BWD\\s+", new String[]{"currentPointer.bwd(", ");"});
-		put("TURN\\s+", new String[]{"currentPointer.turnRight(", ");"});
-		put("TURNR\\s+", new String[]{"currentPointer.turnRight(", ");"});
-		put("TURNL\\s+", new String[]{"currentPointer.turnLeft(", ");"});
+		put("TURN\\s+", new String[]{"currentPointer.turnRight(", "*orientation);"});
+		put("TURNR\\s+", new String[]{"currentPointer.turnRight(", "*orientation);"});
+		put("TURNL\\s+", new String[]{"currentPointer.turnLeft(", "*orientation);"});
 		put("MOV\\s+", new String[]{"currentPointer.move(", ");"});
 		put("POS\\s+", new String[]{"currentPointer.pos(", ");"});
 		put("HIDE\\s+", new String[]{"currentPointer.hide();",""});
@@ -34,7 +34,8 @@ public class Interpreter {
 		put("DEL\\s+", new String[]{"// "," = null;"}); // primitive type cannot point on null, so it cannot be "deleted" at all, even by simulating it
 		put("IF\\s+", new String[]{"if(", "){"});
 		put("WHILE\\s+", new String[]{"while(", "){"});
-		put("MIRROR\\s+", new String[]{"mirror(", "){ // temporary "});
+		put("MIRROR\\s+(.+)", new String[]{});
+		put("MIRROREND\\s*", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{}); // the FOR is peculiar and is handled separately, thus the empty String
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{});
@@ -70,6 +71,7 @@ public class Interpreter {
 	 * @throws IllegalArgumentException If there is an illegal argument passed to the function
 	 */
 	public String decode(String cyCode, boolean ignoreError) throws IllegalArgumentException, IllegalStateException{
+		App app = new App();
 		String indentation = "\t\t";
 		String javaCode = " Pointer currentPointer";						// currentPointer must be declared because the user won't do it
 		if (ignoreError){javaCode+=" = null;";}else{javaCode+=";";}			// if the instruction will be surrounded by try catch, add "= null" to detect the error, if not don't add it, or it will crash
@@ -79,6 +81,7 @@ public class Interpreter {
 		List<String> mimicPile = new ArrayList<>();
 		Set<String> nullVariables = new HashSet<>();						// to store the "removed" variable (that point to null instead), to allow to just assign them a new value if used again, and not redeclare them (which would do an error)
 		cyCode = cyCode.replaceAll("\\{", "");				        // remove all the { (because it's easier to remove it and place it only where necessary than check if and where the user placed it)
+		//cyCode = cyCode.replaceAll("\\}\nMIRROREND", "MIRROREND");
 		cyCode = cyCode.replaceAll("\\}", "\n" + indentation + "}\n");		// skip line next to } to prevent having code on the same line as a }
 		List<String> cyLines = List.of(cyCode.split("\\r?\\n"));			// separate in a list of lines
 
@@ -101,7 +104,8 @@ public class Interpreter {
 				Matcher matcher = pattern.matcher(newCyLine);				// for each keyword, check if one match the line
 				if (matcher.find()) {
 
-					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
+																			// loop if is for all cases except FOR MIMIC ENDMIMIC MIRROR and CURSOR
+					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR") && !key.contains("MIRROR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
 						if (key.contains("WHILE")){
 							functionPile.add("WHILE");
 							if (ignoreError){
@@ -114,7 +118,6 @@ public class Interpreter {
 								newJavaLine += "try{\n" + indentation;
 							}
 						}
-													// loop if is for all cases except FOR MIMIC ENDMIMIC MIRROR ENDMIRROR and CURSOR
 						if (!(preventSELECT != 0 && key.contains("SELECT"))) {    // if the usage of select is allowed
 							String[] inputs = newCyLine.split(matcher.group(0)); // if it matches, get the parts before and after the keyword
 							int i = 0;
@@ -155,7 +158,7 @@ public class Interpreter {
 							}
 
 							if (key.contains("REMOVE") || key.contains("DEL")){
-								nullVariables.add(inputs[1]);
+								nullVariables.add(inputs[1]);					// if a variable is "removed", add it to the list to know that it only needs to be assigned and not redeclared if used again
 							}
 
 							key2 = key;
@@ -241,13 +244,13 @@ public class Interpreter {
 						patternFound = true;
 						break;
 
-					}else if (key.contains("END")) {
+					}else if (key.contains("MIMIC") && key.contains("END")) {
                         if (!removed.equals("MIMIC") && !ignoreError) {
                             throw new IllegalStateException("Closing MIMIC but function " + removed + " is still opened"); // throw an error to tell the user that there is something wrong
                         }
 
                         String lastMimic = "";
-                        if (!mimicPile.isEmpty()) {
+                        if (!mimicPile.isEmpty()) { 						// get the last opened mimic argument
                             lastMimic = mimicPile.remove(mimicPile.size() - 1);
                         } else if (!ignoreError) {
                             throw new IllegalStateException("Closing mimic, but no mimic are still open");
@@ -255,8 +258,9 @@ public class Interpreter {
                             break;
                         }
                         key2 = key;
-                        newJavaLine = "\n" + indentation + lastMimic + "Index = 0;\n" + indentation + "liste=oldliste.get(oldliste.size() - 1);" +
-                                "\n\n" + indentation + "oldliste.remove(oldliste.size() - 1);\n";
+                        newJavaLine = "\n" + indentation + lastMimic + "Index = 0;\n" + indentation +
+								"liste=oldliste.get(oldliste.size() - 1);" + indentation +
+                                "oldliste.remove(oldliste.size() - 1);\n";
                         preventSELECT--;                                    // decrement to know if code is out of a mimic loop
                         patternFound = true;
                         if (ignoreError) {
@@ -264,11 +268,85 @@ public class Interpreter {
                         }
                         break;
 
-                    }else {
+					} else if (key.contains("MIRROR") && !key.contains("END")) {
+						key2 = key;
+						String[] tests = matcher.group(1).split(",");
+
+						if (ignoreError){
+							newJavaLine = indentation + "try{\n" + indentation; // if error must be ignored, add try at start of the function
+						}
+
+						if (tests.length == 4){
+							functionPile.add("MIRROR");
+							newJavaLine +=   "tempMirrorPointer = new Pointer(gc);\n" +  indentation +"symmetryPointer = new Pointer(gc);\n" + indentation +
+									"tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n" +indentation +
+									"tempMirrorPointer.setDirection(currentPointer.getDirection());\n" + indentation +
+									"symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());\n" +indentation +
+									"symmetryPointer.setDirection(tempMirrorPointer.getDirection());\n" + indentation +
+									"symmetryPointer.getPosMirror(" + tests[0] +"," +tests[1]+"," +tests[2]+"," +tests[3]  + ");\n"+ indentation +
+									"mirrorList.set(0,tempMirrorPointer);\n" + indentation +
+									"mirrorList.set(1,symmetryPointer);\n" + indentation +
+									"oldmirrorList.add(new ArrayList<>(mirrorList));\n" + indentation +
+									"for(indexMirror = 0;  indexMirror <2; indexMirror++){\n\t" + indentation +
+									"oldIndex.add(indexMirror);\n" +indentation +
+									"orientation = (indexMirror == 0) ? 1 : -1;\n" + indentation +
+									"currentPointer = mirrorList.get(indexMirror);\n" +indentation;
+							preventSELECT++;									// increment to know if code is in a mirror loop
+							patternFound = true;
+							break;
+
+						} else if (tests.length == 2){
+							functionPile.add("MIRROR");
+							newJavaLine +=   "tempMirrorPointer = new Pointer(gc);\n" +  indentation +"symmetryPointer = new Pointer(gc);\n" + indentation +
+									"tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n" +indentation +
+									"tempMirrorPointer.setDirection(currentPointer.getDirection());\n" + indentation +
+									"symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());\n" +indentation +
+									"symmetryPointer.setDirection(tempMirrorPointer.getDirection());\n" + indentation +
+									"symmetryPointer.getPosMirror(" + tests[0] +"," +tests[1] + ");\n"+ indentation +
+									"mirrorList.set(0,tempMirrorPointer);\n" + indentation +
+									"mirrorList.set(1,symmetryPointer);\n" + indentation +
+									"oldmirrorList.add(new ArrayList<>(mirrorList));\n" + indentation +
+									"for(indexMirror = 0;  indexMirror <2; indexMirror++){\n\t" + indentation +
+									"oldIndex.add(indexMirror);\n" +indentation +
+									"orientation = 1;\n" + indentation +
+									"currentPointer = mirrorList.get(indexMirror);\n" +indentation;
+							preventSELECT++;									// increment to know if code is in a mirror loop
+							patternFound = true;
+							break;
+
+						} else {
+
+							if (!ignoreError) {
+								throw new IllegalArgumentException("Unknown instruction : " + matcher.group(1));
+							} else {
+								patternFound = true;                                // if errors are ignored, the pattern has been found nonetheless
+								break;
+							}
+						}
+					} else if (key.contains("MIRROR") && key.contains("END")) {
+						if (!removed.equals("MIRROR") && !ignoreError) {
+							throw new IllegalStateException("Closing MIMIC but function " + removed + " is still opened"); // throw an error to tell the user that there is something wrong
+						}
+						key2 = key;
+						newJavaLine = indentation +"indexMirror = oldIndex.get(oldIndex.size()-1);\n" + indentation +
+								 "oldIndex.remove(oldIndex.size()-1);\n" + indentation +
+								 "}\n" + indentation +
+								 "oldmirrorList.remove(oldmirrorList.size() - 1);\n" + indentation +
+								 "mirrorList = oldmirrorList.get(oldmirrorList.size() - 1);\n";
+						preventSELECT--;									// decrement to know if code is out of a mirror loop
+						patternFound = true;
+
+						if (ignoreError) {
+							newJavaLine += indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
+						}
+						break;
+
+					} else if (key.contains("CURSOR")) { // case of the CURSOR command
 						key2 = key;
 						if (!nullVariables.contains(matcher.group(1))) { 		// if the cursor has never been used, declare it
 							newJavaLine = indentation + "Pointer " + matcher.group(1) + " = new Pointer(gc);\n" +
-									indentation + "int " + matcher.group(1) + "Index = 0;";
+									indentation + "int " + matcher.group(1) + "Index = 0;\n" +
+                                    indentation + matcher.group(1) +".setSpeed(" + app.sliderValue +");";
 						} else {												// if the cursor have already been used, but was "removed" and point on null, just assign it a new value
 							newJavaLine = indentation + matcher.group(1) + " = new Pointer(gc);\n" +
 									indentation + matcher.group(1) + "Index = 0;";
@@ -276,19 +354,26 @@ public class Interpreter {
 						}
 						patternFound = true;
 						break;
+					} else {
+						if (!ignoreError) {
+							throw new IllegalArgumentException("Unknown instruction : " + matcher.group(1));
+						} else {
+							patternFound = true;
+							break;
+						}
 					}
 
 					String[] inputs = newCyLine.split(matcher.group(0)); // add what was before and after the key
 					if(inputs.length == 2){
 						newJavaLine = indentation + inputs[0] + " " + newJavaLine + " " + inputs[1];
-					}else{
+					} else {
 						newJavaLine = indentation + " " + newJavaLine;
 					}
 
 
 
-				}else{
-					if (newCyLine.contains("}")){							// if no matches, then check the } for end of loops (if there is one, the only case is that this is the only thing on the line except tabulations
+				} else {
+					if (newCyLine.contains("}")) {							// if no matches, then check the } for end of loops (if there is one, the only case is that this is the only thing on the line except tabulations
 						patternFound = true;
 						if (!functionPile.isEmpty()) {
 							removed = functionPile.remove(functionPile.size() - 1); // delete the last function opened
@@ -298,8 +383,13 @@ public class Interpreter {
 							break;
 						}
 
-						newJavaLine = indentation + "}";
-						if (ignoreError && !removed.equals("MIMIC")){
+						if (!removed.equals("MIRROR")) {
+							newJavaLine = indentation + "}";
+						} else {
+							newJavaLine = indentation;
+						}
+
+						if (ignoreError && !removed.equals("MIMIC") && !removed.equals("MIRROR")){
 							newJavaLine +="\n" + indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
 						}
 						break;
@@ -335,7 +425,7 @@ public class Interpreter {
 		}
 
 		if(!functionPile.isEmpty() && !ignoreError){
-			throw new IllegalStateException(functionPile.toString() + "the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
+			throw new IllegalStateException("the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
 		}
 
 		if(preventSELECT != 0 && !ignoreError){

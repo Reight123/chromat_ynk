@@ -1,6 +1,7 @@
 package fr.cyu.chroma;
 
 import javafx.application.Application; //import libraries
+import javafx.collections.FXCollections;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -32,11 +33,15 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = observableArrayList();
     private final ObservableList<Button> addButtons = observableArrayList();
     private final ObservableList<Button> deleteButtons = observableArrayList();
-    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "ENDBLOCK", "MIMICEND", "ENDMIRROR", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MATH", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
+    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "BLOCKEND", "MIMICEND", "MIRROREND", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MATH", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
-    private double sliderValue = 50;
+    double sliderValue = 100;
     private boolean errorGestion = false;
+    Stage primaryStage;
+
+
+
     /**
      this function puts everything the app needs in primaryStage
 
@@ -44,6 +49,7 @@ public class App extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
         primaryStage.setTitle("Menu"); //set the title of the main window
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
         primaryStage.setFullScreen(true);
@@ -89,7 +95,7 @@ public class App extends Application {
         addButtons.add(addButton);
         deleteButtons.add(deleteButton);
 
-        messageBox = new VBox();        //create the box where the errors will be show
+        messageBox = new VBox();        //create the box where the errors will be shown
         messageBox.getStyleClass().add("gbox");
         Label label = new Label("Erreur :");
         messageBox.getChildren().add(label);
@@ -192,18 +198,18 @@ public class App extends Application {
 
         Button selectFileButton = new Button("Sélectionner un fichier");
         selectFileButton.getStyleClass().add("button");
-        selectFileButton.setOnAction(event -> {
+        selectFileButton.setOnAction(event -> {                 //if the button is clicked it will select a file to execute
             File file = selectFile();
             executeFile(file);
-        });                                                     //if the button is clicked it will select a file to execute
+        });
 
         Label executeFile = new Label("\u25B6");
         executeFile.getStyleClass().add("sbutton");
-        executeFile.setOnMouseClicked(event -> {
+        executeFile.setOnMouseClicked(event -> {                //if the button is clicked it will execut the current script
             saveToFile(".currentFile");
             File file = new File("./storage/.currentFile.txt");
             executeFile(file);
-        });                                                     //if the button is clicked it will execut the current script
+        });
 
         Slider slider = new Slider(0, 100, 50);
         slider.setShowTickLabels(true);
@@ -212,13 +218,13 @@ public class App extends Application {
         slider.setMinorTickCount(5);
         slider.setBlockIncrement(10);
         slider.getStyleClass().add("slider");
-        slider.setOnMouseReleased(event -> {
+        slider.setOnMouseReleased(event -> {                    //this slider let the user choose the drawing's speed
             sliderValue = slider.getValue();
-        });                                                     //this slider let the user choose the drawing's speed
+        });
 
         ToggleButton  selecterror= new ToggleButton("Arret si Erreur");
         selecterror.getStyleClass().add("button");
-        selecterror.setOnAction(event -> {
+        selecterror.setOnAction(event -> {                      //this button let the user choose if he want to ignore or not the errors
             if (selecterror.isSelected()) {
                 selecterror.setText("Erreurs ignorées");
                 errorGestion = true;
@@ -226,7 +232,7 @@ public class App extends Application {
                 selecterror.setText("Arret si Erreur");
                 errorGestion = false;
             }
-        });                                                     //this button let the user choose if he want to ignore or not the errors
+        });
 
         HBox buttonBox = new HBox(10);
         buttonBox.getStyleClass().add("subbox");
@@ -249,13 +255,13 @@ public class App extends Application {
             Button confirmButton = new Button("Confirmer");
             confirmButton.setOnAction(event -> {
                 String fileName = fileNameField.getText();
-                if (!fileName.isEmpty()) { //save it only if the name is not empty
+                if (!fileName.isEmpty()) {                              //save it only if the name is not empty
                     saveToFile(fileName);
                     stage.close();
                 }
             });
             vbox.getChildren().addAll(fileNameField, confirmButton);
-            Scene scene = new Scene(vbox, 400, 125);            //open the save window
+            Scene scene = new Scene(vbox, 400, 125);                    //open the save window
             scene.getStylesheets().add("/style.css");
             stage.setScene(scene);
             stage.show();
@@ -270,23 +276,27 @@ public class App extends Application {
      */
     private void saveToFile(String fileName) {
         try {
-            File file = new File("./storage/" + fileName + ".txt");  //create the .txt fill in the absolute path
+            File file = new File("./storage/" + fileName + ".txt");     //create the .txt fill in the absolute path
             FileWriter fileWriter = new FileWriter(file);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
-            for (int i = 0; i < choiceBoxes.size(); i++) {      //write in the fill all the command
+            for (int i = 0; i < choiceBoxes.size(); i++) {              //write in the fill all the command
                 String selectedOption = choiceBoxes.get(i).getValue();
                 String enteredValue = valueFields.get(i).getText();
                 if (selectedOption != null) {
                     if (selectedOption.equals("FOR") || selectedOption.equals("IF") || selectedOption.equals("WHILE") || selectedOption.equals("MIMIC")|| selectedOption.equals("MIRROR")) {    //those command open a loop
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                         bufferedWriter.write("{\n");
-                    } else if (selectedOption.equals("ENDBLOCK") || selectedOption.equals("ENDMIRROR") ) {      //they close a loop
+                    } else if (selectedOption.equals("BLOCKEND")) {     //those close a loop
                         bufferedWriter.write("}\n");
-                    } else if (selectedOption.equals("MIMICEND")) { //it also close a loop but need to be written
+                    } else if (selectedOption.equals("MIMICEND")) {     //this one also close a loop but need to be written
                         bufferedWriter.write("}\n");
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
-                    } else if (!enteredValue.isEmpty()) {       //all the others commands
+                    }
+                      else if (selectedOption.equals("MIRROREND")) {     //this one also close a loop but need to be written
+                        bufferedWriter.write("}\n");
+                        bufferedWriter.write(selectedOption + " " + enteredValue +"\n");
+                    } else if (!enteredValue.isEmpty()) {               //all the others commands
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                     }
                 }
@@ -307,9 +317,10 @@ public class App extends Application {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Sélectionner un fichier");
         String directory = "storage/";
-        File repertoireInitial = new File(directory);   //open the file selectionner in storage/
+        File repertoireInitial = new File(directory);                   //open the file selectionner in storage/
         fileChooser.setInitialDirectory(repertoireInitial);
-        File selectedFile = fileChooser.showOpenDialog(null);       //select the choosen file
+
+        File selectedFile = fileChooser.showOpenDialog(primaryStage);           //select the choosen file
         return selectedFile;
     }
 
@@ -330,12 +341,12 @@ public class App extends Application {
         if (!fileContent.isEmpty()) {
             try {
                 Interpreter interpreter = new Interpreter(800, 800);
-                javaCode = interpreter.decode(fileContent, errorGestion);              //turn the selected file into a java script
+                javaCode = interpreter.decode(fileContent, errorGestion);       //turn the selected file into a java script
                 File templateFile = new File("../plotter/src/main/template/templateMain.java");
                 String temp = getFileContent(templateFile);
                 String[] template;
                 if(temp.contains("//insertion area do not delete//")) {
-                    template = temp.split("//insertion area do not delete//");//find in the executable where it can put the script
+                    template = temp.split("//insertion area do not delete//");  //find in the executable where it can put the script
                 } else {
                     updateMessageBox(observableArrayList("source file plotter/src/main/template/templateMain.java does not contains insertion area"), messageBox);
                     System.out.println("error while executing file : source file plotter/src/main/template/templateMain.java does not contains insertion area");
@@ -345,7 +356,7 @@ public class App extends Application {
 
                 if (template.length == 2 && !javaCode.isEmpty()) {
                     javaCode = template[0] + javaCode + template[1];
-                    writeJavaFile(javaCode);   //put the scipt in the executable
+                    writeJavaFile(javaCode);                            //put the scipt in the executable
                     Thread thread = new Thread(() -> run(this, messageBox));
                     thread.start();
                 } else {
@@ -375,7 +386,7 @@ public class App extends Application {
             try (BufferedReader br = new BufferedReader(new FileReader(selectedFile))) {
                 StringBuilder content = new StringBuilder();
                 String line;
-                while ((line = br.readLine()) != null) {    //read line by line
+                while ((line = br.readLine()) != null) {                //read line by line
                     content.append(line).append("\n");
                 }
                 fileContent = content.toString();
@@ -441,11 +452,11 @@ public class App extends Application {
             String pathPlotter = "../plotter/pom.xml";
             String osName = System.getProperty("os.name").toLowerCase();
             ProcessBuilder processBuilder;
-            if (osName.contains("windows")) {   //Writes the process differently depending on the device's operating system.
+            if (osName.contains("windows")) {               //Writes the process differently depending on the device's operating system.
                 processBuilder = new ProcessBuilder("cmd.exe", "/c", "mvn", "-f", pathPlotter, "clean", "javafx:run");
             } else if (osName.contains("linux") || osName.contains("mac")) {
                 processBuilder = new ProcessBuilder("mvn", "-f", pathPlotter, "clean", "javafx:run");
-            } else {    //error message when the os is neither windows, mac or linux
+            } else {                                        //error message when the os is neither windows, mac nor linux
                 Platform.runLater(() -> {
                     updateMessageBox(observableArrayList("OS " + osName + " is not supported."), messageBox);
                 });
@@ -473,7 +484,7 @@ public class App extends Application {
                         mainLine(error, errorMessages);
                     }
                 }
-                if (error.contains("Failed to execute goal")) {          // when the error explains what is th pb, start printing it
+                if (error.contains("Failed to execute goal")) { // when the error explains what is th pb, start printing it
                     errorMessages.add(error);
                     mainLine(error, errorMessages);
                     interestingPart = true;

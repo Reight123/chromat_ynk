@@ -83,6 +83,7 @@ public class Interpreter {
 	 * @throws IllegalArgumentException If there is an illegal argument passed to the function
 	 */
 	public String decode(String cyCode, boolean ignoreError) throws IllegalArgumentException, IllegalStateException{
+		boolean drawSomething = false;										// do the instructions draw something
 		String indentation = "\t\t";
 		String javaCode = " Pointer currentPointer = new Pointer(gc);\n" + indentation +"currentPointer.setSpeed(speedSlider)";						// currentPointer must be declared because the user won't do it
 		if (ignoreError){javaCode+=" = null;";}else{javaCode+=";";}			// if the instruction will be surrounded by try catch, add "= null" to detect the error, if not don't add it, or it will crash
@@ -166,6 +167,10 @@ public class Interpreter {
 							} else { // if the command is the declaration of a variable that has already been declared but "removed" (i.e. it now points on null, and must only be assigned)
 								newJavaLine = indentation + inputs[0] + convert(key, 1, inputs[1], ignoreError) + template[1];
 								nullVariables.remove(variableName);
+							}
+
+							if(!drawSomething && ( key.contains("FWD") || key.contains("BWD") || key.startsWith("MOV") || key.contains("CIRCLED") || key.contains("CIRCLEF") || key.contains("CROSS") || key.contains("RECTANGLED") || key.contains("RECTANGLEF") || key.contains("SQUARED") || key.contains("SQUAREF") || key.contains("TRIANGLED") || key.contains("TRIANGLEF"))){
+								drawSomething = true; 							// to know to run the drawing or not
 							}
 
 							if (key.contains("REMOVE") || key.contains("DEL")){
@@ -449,11 +454,15 @@ public class Interpreter {
 		}
 
 		if(!functionPile.isEmpty() && !ignoreError){
-			throw new IllegalStateException("the number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
+			throw new IllegalStateException("The number of end of loop doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of if/for/while than end
 		}
 
 		if(preventSELECT != 0 && !ignoreError){
-			throw new IllegalStateException("the number of end of mimic or mirror doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of mimic and mirror than end
+			throw new IllegalStateException("The number of end of mimic or mirror doesn't match the number of start"); // throw an error to tell the user that there is not the same amount of start of mimic and mirror than end
+		}
+
+		if(drawSomething){
+			javaCode = indentation + "this.notEmpty = true;\n" + javaCode; // if the instruction draw something, let the Main know that the drawing can be saved
 		}
 
 		return javaCode;

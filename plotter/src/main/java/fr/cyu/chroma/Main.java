@@ -179,12 +179,15 @@ public class Main extends Application {
 
          Pointer currentPointer = new Pointer(gc);
 		currentPointer.setSpeed(speedSlider);
-		  speedSlider =  0.0 ; 
-		Pointer c = new Pointer(gc);
-		int cIndex = 0;
-		c.setSpeed(speedSlider);
-		 currentPointer = c ; 
-		 currentPointer.fwd( 500 ); 
+		  speedSlider =  100.0 ; 
+		Pointer c1 = new Pointer(gc);
+		int c1Index = 0;
+		c1.setSpeed(speedSlider);
+		 currentPointer = c1 ; 
+		 currentPointer.setColor( "#40E0D0" ); 
+		 currentPointer.fwd( 100 ); 
+		 currentPointer.setColor( Color.BLUE ); 
+		 currentPointer.fwd( 200 ); 
 
         if (currentPointer != null) {
             return currentPointer;

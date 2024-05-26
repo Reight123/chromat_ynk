@@ -16,7 +16,7 @@ public class Pointer {
     private double pos_y = 400;
     private double direction = 0.0;
     private boolean is_shown = true;
-    private int opacity = 100;
+    private double opacity = 100;
     private double thick = 1;
     private int onAction = 0;
     private boolean animationEnCours = false;
@@ -52,7 +52,7 @@ public class Pointer {
         return is_shown;
     }
 
-    public int getCursorOpacity() {
+    public double getCursorOpacity() {
         return opacity;
     }
 
@@ -74,7 +74,7 @@ public class Pointer {
 
     public void setDirection(double direction) { this.direction = direction; }
 
-    public void setOpacity(int opacity) { this.opacity = opacity; }
+    public void setOpacity(double opacity) { this.opacity = opacity; }
 
     public void setThickness(double thick) { this.thick = thick; }
     public void setSpeed(double speedSlider) {
@@ -104,7 +104,8 @@ public class Pointer {
      * @param direction
      */
     public void doodleTracker(double[] pointsX, double[] pointsY, double value, double direction) {
-        double thickness = this.thick;
+        double thickness = this.thick, press = this.opacity/100;
+        Color colorLine = this.currentColor;
         AnimationTimer timer = new AnimationTimer() {
             int count = 0;
             double deltaX = Math.cos(direction * Math.PI / 180);
@@ -121,8 +122,9 @@ public class Pointer {
                     pointsX[1] += deltaX;
                     pointsY[1] += deltaY;
                 }
-                gc.setStroke(currentColor); //Use of currentColor to define the color of the stroke
+                gc.setStroke(colorLine); //Use of currentColor to define the color of the stroke
                 gc.setLineWidth(thickness);
+                gc.setGlobalAlpha(press);
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
 
                 try {

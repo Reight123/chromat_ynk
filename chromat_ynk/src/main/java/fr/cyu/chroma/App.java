@@ -38,8 +38,6 @@ public class App extends Application {
     private VBox messageBox = new VBox();
     double sliderValue = 100;
     private boolean errorGestion = false;
-    Stage primaryStage;
-
 
 
     /**
@@ -49,7 +47,6 @@ public class App extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
-        this.primaryStage = primaryStage;
         primaryStage.setTitle("Menu"); //set the title of the main window
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
         primaryStage.setFullScreen(true);
@@ -64,6 +61,7 @@ public class App extends Application {
 
         ScrollPane scrollPane = new ScrollPane(); //put the vbox with a scrollbar
         scrollPane.setContent(vbox);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.getStylesheets().add(("/style.css"));
 
         Scene scene = new Scene(scrollPane, screenBounds.getWidth(), screenBounds.getHeight()); //instance of the content
@@ -317,10 +315,9 @@ public class App extends Application {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Sélectionner un fichier");
         String directory = "storage/";
-        File repertoireInitial = new File(directory);                   //open the file selectionner in storage/
+        File repertoireInitial = new File(directory);   //open the file selectionner in storage/
         fileChooser.setInitialDirectory(repertoireInitial);
-
-        File selectedFile = fileChooser.showOpenDialog(primaryStage);           //select the choosen file
+        File selectedFile = fileChooser.showOpenDialog(null);       //select the choosen file
         return selectedFile;
     }
 

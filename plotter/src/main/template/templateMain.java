@@ -147,15 +147,23 @@ public class Main extends Application {
 
     private Pointer commands(GraphicsContext gc) {
         List<Pointer> liste = new ArrayList<>();
+        List<Pointer> mirrorList = new ArrayList<>();
         List<List<Pointer>> oldliste = new ArrayList<>();
+        List<List<Pointer>> oldmirrorList = new ArrayList<>();
         List<Pointer> temp = new ArrayList<>();
         List<Pointer> target = new ArrayList<>();
+        List<Integer> oldIndex = new ArrayList<>();
         Pointer tempPointer = null;
         Pointer targetPointer = null;
+        Pointer tempMirrorPointer = null;
+        Pointer symmetryPointer = null;
         Pointer targetStart;
-        int k=0;
+        int k=0,indexMirror=0,orientation=1;
         temp.add(tempPointer);
         target.add(targetPointer);
+        mirrorList.add(tempMirrorPointer);
+        mirrorList.add(symmetryPointer);
+        oldmirrorList.add(new ArrayList<>(mirrorList));
 
 
         //insertion area do not delete//

@@ -21,6 +21,7 @@ public class Pointer {
     private int onAction = 0;
     private boolean animationEnCours = false;
     private Circle cursor;
+    private int speed;
 
     private final GraphicsContext gc;
 
@@ -60,6 +61,10 @@ public class Pointer {
         return thick;
     }
 
+    public int getSpeed() { return speed; }
+
+
+
     public void setPos_x(double pos_x) {
         this.pos_x = pos_x;
     }
@@ -68,24 +73,32 @@ public class Pointer {
         this.pos_y = pos_y;
     }
 
-    public void setDirection(int direction) {
-        this.direction = direction;
-    }
+    public void setDirection(double direction) { this.direction = direction; }
 
+    public void setOpacity(int opacity) { this.opacity = opacity; }
 
-    public void setOpacity(int opacity) {
-        this.opacity = opacity;
-    }
-
-    public void setThickness(int thick) {
-        this.thick = thick;
+    public void setThickness(int thick) { this.thick = thick; }
+    public void setSpeed(double speedSlider) {
+        switch ((int) speedSlider) {
+            case 100:
+                this.speed = 0;
+                break;
+            case 50:
+                this.speed = 10;
+                break;
+            case 0:
+                this.speed = 40;
+                break;
+            default:
+                System.out.println("Invalid speed value: " + speed);
+                break;
+        }
     }
 
     public String toString() {
         return  "1 (" + getPos_x() + "," + getPos_y() + ")";
     }
 
-    //public Color setColor(int c) {return colors[c];}
 
     /**
      * this function define how it forward of 1
@@ -117,7 +130,7 @@ public class Pointer {
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
 
                 try {
-                    TimeUnit.MILLISECONDS.sleep(0);
+                    TimeUnit.MILLISECONDS.sleep(speed);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -138,7 +151,6 @@ public class Pointer {
      * @param value the value the cursor forward
      */
     public void fwd(double value) {
-        System.out.println("Position initiale : (" + pos_x + ", " + pos_y + ")");
         double x1 = this.pos_x;
         double y1 = this.pos_y;
         double[] pointsX = {x1, x1};
@@ -147,7 +159,6 @@ public class Pointer {
 
         pos_x += value * Math.cos(direction * Math.PI / 180);       //horizontal part
         pos_y += value * Math.sin(direction * Math.PI / 180);       //vertical part
-        System.out.println("Position finale : (" + pos_x + ", " + pos_y + ")");
     }
 
     /**
@@ -163,10 +174,10 @@ public class Pointer {
      * @param i value in degree it turns
      */
     public void turnRight(int i){
-        direction-=i;
+        direction+=i;
     }
     public void turnRight(double i){
-        direction-= (int) i;
+        direction+= i;
     }
 
     /**
@@ -174,10 +185,10 @@ public class Pointer {
      * @param i value in degree it turns
      */
     public void turnLeft(int i){
-        direction+=i;
+        direction-=i;
     }
     public void turnLeft(double i){
-        direction+= (int) i;
+        direction-= i;
     }
 
     /**
@@ -273,121 +284,73 @@ public class Pointer {
         this.currentColor = color;
     }
 
-
-/*
-    public void lookat(Pointer pointer){}
-
-    public int lookat(double x, double y){
-        int teta_initial=direction;
-        direction= (int) Math.atan(y/x);
-        return teta_initial;
+    public double distance(Pointer other)
+    {
+        return Math.sqrt(Math.pow(pos_x - other.pos_x, 2) + Math.pow(pos_y - other.pos_y, 2));
     }
-    public int lookat(int x, int y){
-        int teta_initial=direction;
-        direction= (int) Math.atan(y/x);
-        return teta_initial;
-    }
-    public void addCouleur(){
-        int c;
-        System.out.println("0) Bleu, 1) Rouge  2) Vert");
-        Scanner lectureClavier = new Scanner(System.in);
-        System.out.println("Entrer une couleur: ");
-        c = lectureClavier.nextInt();
-        Color color = setColor(c);
-        gc.setStroke(color);
-    }
-     public void move(int x, int y){
-        //System.out.println(pos_x + ",z" + pos_y);
-        System.out.println("direction : " + direction);
-        int teta_initial=direction;
-        direction = (int) Math.toDegrees(Math.atan2(y - pos_y, x - pos_x));
-        System.out.println("directionS : " + direction);
-        System.out.println("distance : " + Math.abs(Math.sqrt(y*y+x*x)));
-        fwd(Math.abs(Math.sqrt(y*y+x*x)));
-        direction=teta_initial;
-        System.out.println("direction : " + direction);
-        //System.out.println(pos_x + "," + pos_y);
-      }
-    public void move(int x, int y){
-        int teta_initial=direction;
-        direction=(int) Math.atan(y/x);
-        fwd(Math.sqrt(y*y+x*x));
-        direction=teta_initial;
-    }
-    public void move(double x, double y){
-        int teta_initial=lookat(x,y);
-        fwd(Math.sqrt(y*y+x*x));
-        direction=teta_initial;
-    }
-    public void doodleTracker(double[] pointsX, double[] pointsY, int value, double direction) {
-
-            AnimationTimer timer = new AnimationTimer() {
-                int count = 0;
-                @Override
-                public void handle(long now) {
-                    if (value < 0) {
-                        pointsX[1] -= Math.cos(direction * Math.PI / 180);
-                        pointsY[1] -= Math.sin(direction * Math.PI / 180);
-                    } else {
-                        pointsX[1] += Math.cos(direction * Math.PI / 180);
-                        pointsY[1] += Math.sin(direction * Math.PI / 180);
-                    }
-                    gc.clearRect(cursor.getCenterX() - cursor.getRadius(),
-                            cursor.getCenterY() - cursor.getRadius(),
-                            cursor.getRadius() * 2, cursor.getRadius() * 2);
-                   // gc.clearRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
-                    gc.setLineWidth(2);
-                    gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
-                    cursor.setCenterX(pointsX[1]);
-                    cursor.setCenterY(pointsY[1]);
-
-                    gc.strokeOval(cursor.getCenterX() - cursor.getRadius(),
-                            cursor.getCenterY() - cursor.getRadius(),
-                            cursor.getRadius() * 2, cursor.getRadius() * 2);
-
-
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(0);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    count++;
-
-                    if (count >= Math.abs(value)) {
-                        onAction = 0;
-                        stop();
-                       // System.out.println("FIN fwdI");
-                    }
-                }
-            };
-            timer.start();
+    public void getPosMirror(double x, double y){
+        double d = 0, angle = this.direction;
+        Pointer p = new Pointer(gc);
+        p.pos(x,y);
+        lookat(p.pos_x,p.pos_y);
+        d = distance(p);
+        pos(x,y);
+        this.setPos_x( pos_x + d * Math.cos(this.direction * Math.PI / 180));
+        this.setPos_y( pos_y + d * Math.sin(this.direction * Math.PI / 180));
+        setDirection(angle+180);
     }
 
-    public void fwd(int value) {
-        System.out.println("Position initiale : (" + pos_x + ", " + pos_y + ")");
-        double x1 = this.pos_x;
-        double y1 = this.pos_y;
-        double[] pointsX = {x1, x1};
-        double[] pointsY = {y1, y1};
-        doodleTracker(pointsX, pointsY, value, direction);
+    public void getPosMirror(double x1, double y1, double x2, double y2){
+        Pointer p1 = new Pointer(gc);
+        Pointer p2 = new Pointer(gc);
+        p1.setPos_x(x1);
+        p1.setPos_y(y1);
+        p2.setPos_x(x2);
+        p2.setPos_y(y2);
 
-        pos_x += value * Math.cos(direction * Math.PI / 180);
-        pos_y += value * Math.sin(direction * Math.PI / 180);
+        double a = 0, b=0,c=0,alpha = 0, beta = 0, angle = this.direction;
+        double x = pos_x;
+        double y = pos_y;
+        Pointer tempPointer = new Pointer(gc);
+        tempPointer.pos(x,y);
 
-           TranslateTransition transition = new TranslateTransition(Duration.millis(5000), cursor);
-           transition.setNode(cursor);
-           transition.setToX(pos_x - x1);
-           transition.setToY(pos_y - y1);
-           transition.play();
+        this.pos(p1.pos_x,p1.pos_y);
+        lookat(x,y);
+        double angle1 = direction;
+        lookat(p2.pos_x,p2.pos_y);
+        double angle2 = direction;
+        double diff = angle1 - angle2;
 
-        System.out.println("Position finale : (" + pos_x + ", " + pos_y + ")");
-}
-   public void move(int x, int y) {
-        double newXpoint = pos_x +x;
-        double newYpoint = pos_y +y;
-        lookat(newXpoint,newYpoint);
-        int distance = (int) Math.sqrt(Math.pow(newXpoint - pos_x, 2) + Math.pow(newYpoint - pos_y, 2));
-        fwd(distance);
+        c = p1.distance(p2);
+        b = tempPointer.distance(p1);
+        a = tempPointer.distance(p2);
+
+        alpha =  Math.toDegrees(Math.acos((b * b + c * c -a * a) / (2*(b * c))));
+
+        if( Math.abs(diff) < 180){
+            if (diff > 0)
+            {
+                this.turnLeft(alpha);
+            }
+            else this.turnRight(alpha);
+        }
+        else{
+            if (diff > 0) this.turnRight(alpha);
+            else this.turnLeft(alpha);
+        }
+        this.setPos_x( pos_x + b * Math.cos(this.direction * Math.PI / 180));
+        this.setPos_y( pos_y + b * Math.sin(this.direction * Math.PI / 180));
+
+        p1.lookat(p2.pos_x, p2.pos_y);
+        p2.lookat(p1.pos_x, p1.pos_y);
+
+        setDirection(angle);
+        if( Math.abs(p1.direction - angle) < Math.abs(p2.direction - angle) ){
+            turnRight(2*(p1.direction - angle));
+        }
+        else{
+            turnRight(2*(p2.direction - angle));
+        }
+
     }
-*/
 }

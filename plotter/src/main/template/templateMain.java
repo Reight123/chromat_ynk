@@ -14,7 +14,10 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.stage.Modality;
 import javafx.util.Duration;
 import javax.imageio.ImageIO;
 
@@ -24,13 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import static javafx.collections.FXCollections.observableArrayList;
 
 public class Main extends Application {
     private Canvas canvas;
     private GraphicsContext gc;
+    private boolean notEmpty = false;
     @Override
     public void start(Stage primaryStage) { /*setup the drawing page*/
         primaryStage.setTitle("Votre dessin");
@@ -59,7 +61,6 @@ public class Main extends Application {
         Scene scene = new Scene(borderPane, 800, 870);
 
         updatePointer = commands(gc);
-        System.out.println(currentPointer);
 
         if(updatePointer.isIs_shown() == true) {
             TranslateTransition transition = new TranslateTransition(Duration.millis(3000), currentPointer.getCursor());
@@ -169,7 +170,7 @@ public class Main extends Application {
         Pointer symmetryPointer = null;
         Pointer targetStart;
         int k=0,indexMirror=0,orientation=1;
-        double speedSlider = 100;
+        double speedSlider = 50;
         temp.add(tempPointer);
         target.add(targetPointer);
         mirrorList.add(tempMirrorPointer);
@@ -187,15 +188,32 @@ public class Main extends Application {
     }
 
     private void saveDrawing() { /*save the drawing*/
-        WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
-        canvas.snapshot(null, writableImage);
+        if(this.notEmpty) {
+            WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
+            canvas.snapshot(null, writableImage);
 
-        File file = new File("./../drawing/Votre_dessin.png");
-        try {
-            ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
-        } catch (IOException e) {
-            e.printStackTrace();
+            File file = new File("./../drawing/Votre_dessin.png");
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            showEmptyDrawingPopup();
         }
+    }
+
+    private void showEmptyDrawingPopup() {
+        Stage popupStage = new Stage();
+        popupStage.setTitle("Dessin Vide");
+        popupStage.setAlwaysOnTop(true);
+
+        Pane emptyPane = new Pane();
+        Scene popupScene = new Scene(emptyPane, 200, 100);
+
+        popupStage.setScene(popupScene);
+        popupStage.initModality(Modality.APPLICATION_MODAL); // Block interactions with other windows until this is closed
+        popupStage.show();
     }
 
     public static void main(String[] args) { //launch the program

@@ -1,19 +1,34 @@
 package fr.cyu.chroma;
 
-import javafx.application.Application; //import libraries
-import javafx.collections.FXCollections;
+import javafx.application.Application; //import libraries from all files, to install them if needed
 import javafx.application.Platform;
+import javafx.animation.TranslateTransition;
+import javafx.animation.AnimationTimer;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
+import javax.imageio.ImageIO;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.Modality;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
@@ -22,8 +37,13 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
@@ -33,7 +53,7 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = observableArrayList();
     private final ObservableList<Button> addButtons = observableArrayList();
     private final ObservableList<Button> deleteButtons = observableArrayList();
-    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "BLOCKEND", "MIMICEND", "MIRROREND", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MATH", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE", "CIRCLED", "CIRCLEF", "CROSS", "RECTANGLED", "RECTANGLEF", "SQUARED", "SQUAREF", "TRIANGLED", "TRIANGLEF");
+    private final ObservableList<String> choices = observableArrayList( "CURSOR", "SELECT", "REMOVE","BOOL", "NUM", "STR", "MATH", "DEL", "COLOR", "FWD", "BWD", "HIDE", "SHOW", "LOOKAT", "MOV", "POS", "PRESS", "THICK", "TURNL", "TURNR", "IF", "FOR", "WHILE", "BLOCKEND", "MIMIC", "MIMICEND", "MIRROR", "MIRROREND", "CIRCLED", "CIRCLEF", "CROSS", "RECTANGLED", "RECTANGLEF", "SQUARED", "SQUAREF", "TRIANGLED", "TRIANGLEF");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
     private double sliderValue = 100;

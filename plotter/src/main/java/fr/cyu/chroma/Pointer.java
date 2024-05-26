@@ -4,10 +4,7 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
-import javafx.animation.TranslateTransition;
-import javafx.util.Duration;
 import javafx.scene.shape.Circle;
 
 
@@ -100,8 +97,8 @@ public class Pointer {
      *
      * @param pointsX horizontal position
      * @param pointsY vertical position
-     * @param value
-     * @param direction
+     * @param value distance
+     * @param direction direction
      */
     public void doodleTracker(double[] pointsX, double[] pointsY, double value, double direction) {
         double thickness = this.thick, press = this.opacity/100;
@@ -191,8 +188,8 @@ public class Pointer {
 
     /**
      * this function make the cursor move to a position without drawing
-     * @param x
-     * @param y
+     * @param x x point
+     * @param y y point
      */
     public void pos(double x, double y){
         pos_x=x;
@@ -214,8 +211,8 @@ public class Pointer {
 
     /**
      * change the direction to make the cursor go to th point if it forwards
-     * @param x
-     * @param y
+     * @param x x point
+     * @param y y point
      */
     public void lookat(double x, double y){
         direction = Math.toDegrees(Math.atan2(y - pos_y, x - pos_x));
@@ -240,9 +237,9 @@ public class Pointer {
 
     /**
      * change the color with a rgb code
-     * @param red
-     * @param green
-     * @param blue
+     * @param red coefficient of red
+     * @param green coefficient of green
+     * @param blue coefficient of blue
      */
     public void setColor(int red, int green, int blue){
         if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255){
@@ -255,7 +252,7 @@ public class Pointer {
 
     /**
      * change the color with a hexadcimal code
-     * @param hexadecimal
+     * @param hexadecimal hexadecimal code of the color
      */
     public void setColor(String hexadecimal){
         this.currentColor = Color.web(hexadecimal);
@@ -264,9 +261,9 @@ public class Pointer {
     /**
      * change the color with a rgb code in decimal
      *
-     * @param red
-     * @param green
-     * @param blue
+     * @param red coefficient of red
+     * @param green coefficient of green
+     * @param blue coefficient of blue
      */
     public void setColor(double red, double green, double blue){
         if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 || blue < 0.0 || blue > 1.0){
@@ -279,7 +276,7 @@ public class Pointer {
     /**
      * change the color with an instance of the Color class
      *
-     * @param color
+     * @param color will be a constant of class Color, by name
      */
     public void setColor(Color color){
         this.currentColor = color;

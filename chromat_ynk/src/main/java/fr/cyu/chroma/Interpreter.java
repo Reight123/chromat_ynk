@@ -85,7 +85,7 @@ public class Interpreter {
 	public String decode(String cyCode, boolean ignoreError) throws IllegalArgumentException, IllegalStateException{
 		boolean drawSomething = false;										// do the instructions draw something
 		String indentation = "\t\t";
-		String javaCode = " Pointer currentPointer = new Pointer(gc);\n" + indentation +"currentPointer.setSpeed(speedSlider)";						// currentPointer must be declared because the user won't do it
+		String javaCode = " Pointer currentPointer";						// currentPointer must be declared because the user won't do it
 		if (ignoreError){javaCode+=" = null;";}else{javaCode+=";";}			// if the instruction will be surrounded by try catch, add "= null" to detect the error, if not don't add it, or it will crash
 		int preventSELECT = 0;
 		String removed = "";
@@ -116,7 +116,7 @@ public class Interpreter {
 				Matcher matcher = pattern.matcher(newCyLine);				// for each keyword, check if one match the line
 				if (matcher.find()) {
 
-																			// loop if is for all cases except FOR MIMIC ENDMIMIC MIRROR and CURSOR
+					// loop if is for all cases except FOR MIMIC ENDMIMIC MIRROR and CURSOR
 					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR") && !key.contains("MIRROR") && !key.contains("HIDE") && !key.contains("SHOW")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
 						if (key.contains("WHILE")){
 							functionPile.add("WHILE");
@@ -247,9 +247,11 @@ public class Interpreter {
 								"k++;\n" + indentation +
 								"oldliste.add(new ArrayList<>(liste));\n" + indentation +
 								"tempPointer = new Pointer(gc);\n" + indentation +
+								"tempPointer.setSpeed(speedSlider);\n" + indentation +
 								"tempPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n" + indentation +
 								"temp.add(tempPointer);\n" + indentation +
 								"targetPointer = new Pointer(gc);\n" + indentation +
+								"targetPointer.setSpeed(speedSlider);\n" + indentation +
 								"targetPointer.pos(targetStart.getPos_x(),targetStart.getPos_y());\n" + indentation +
 								"target.add(targetPointer);" +
 								"liste.add(temp.get(k));\n" + indentation +
@@ -261,28 +263,28 @@ public class Interpreter {
 						break;
 
 					}else if (key.contains("MIMIC") && key.contains("END")) {
-                        if (!removed.equals("MIMIC") && !ignoreError) {
-                            throw new IllegalStateException("Closing MIMIC but function " + removed + " is still opened"); // throw an error to tell the user that there is something wrong
-                        }
+						if (!removed.equals("MIMIC") && !ignoreError) {
+							throw new IllegalStateException("Closing MIMIC but function " + removed + " is still opened"); // throw an error to tell the user that there is something wrong
+						}
 
-                        String lastMimic = "";
-                        if (!mimicPile.isEmpty()) { 						// get the last opened mimic argument
-                            lastMimic = mimicPile.remove(mimicPile.size() - 1);
-                        } else if (!ignoreError) {
-                            throw new IllegalStateException("Closing mimic, but no mimic are still open");
-                        } else {
-                            break;
-                        }
-                        key2 = key;
-                        newJavaLine = "\n" + indentation + lastMimic + "Index = 0;\n" + indentation +
+						String lastMimic = "";
+						if (!mimicPile.isEmpty()) { 						// get the last opened mimic argument
+							lastMimic = mimicPile.remove(mimicPile.size() - 1);
+						} else if (!ignoreError) {
+							throw new IllegalStateException("Closing mimic, but no mimic are still open");
+						} else {
+							break;
+						}
+						key2 = key;
+						newJavaLine = "\n" + indentation + lastMimic + "Index = 0;\n" + indentation +
 								"liste=oldliste.get(oldliste.size() - 1);" + indentation +
-                                "oldliste.remove(oldliste.size() - 1);\n";
-                        preventSELECT--;                                    // decrement to know if code is out of a mimic loop
-                        patternFound = true;
-                        if (ignoreError) {
-                            newJavaLine += indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
-                        }
-                        break;
+								"oldliste.remove(oldliste.size() - 1);\n";
+						preventSELECT--;                                    // decrement to know if code is out of a mimic loop
+						patternFound = true;
+						if (ignoreError) {
+							newJavaLine += indentation + "} catch (Exception ignored){}"; // if error must be ignored, add catch at end of function
+						}
+						break;
 
 					} else if (key.contains("MIRROR") && !key.contains("END")) {
 						key2 = key;
@@ -294,7 +296,10 @@ public class Interpreter {
 
 						if (tests.length == 4){
 							functionPile.add("MIRROR");
-							newJavaLine +=   "tempMirrorPointer = new Pointer(gc);\n" +  indentation +"symmetryPointer = new Pointer(gc);\n" + indentation +
+							newJavaLine +=   "tempMirrorPointer = new Pointer(gc);\n" +  indentation +
+									"tempMirrorPointer.setSpeed(speedSlider);\n" + indentation +
+									"symmetryPointer = new Pointer(gc);\n" + indentation +
+									"symmetryPointer.setSpeed(speedSlider);\n" + indentation +
 									"tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n" +indentation +
 									"tempMirrorPointer.setDirection(currentPointer.getDirection());\n" + indentation +
 									"symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());\n" +indentation +
@@ -313,7 +318,10 @@ public class Interpreter {
 
 						} else if (tests.length == 2){
 							functionPile.add("MIRROR");
-							newJavaLine +=   "tempMirrorPointer = new Pointer(gc);\n" +  indentation +"symmetryPointer = new Pointer(gc);\n" + indentation +
+							newJavaLine +=   "tempMirrorPointer = new Pointer(gc);\n" +  indentation +
+									"tempMirrorPointer.setSpeed(speedSlider);\n" + indentation +
+									"symmetryPointer = new Pointer(gc);\n" + indentation +
+									"symmetryPointer.setSpeed(speedSlider);\n" + indentation +
 									"tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());\n" +indentation +
 									"tempMirrorPointer.setDirection(currentPointer.getDirection());\n" + indentation +
 									"symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());\n" +indentation +
@@ -345,10 +353,10 @@ public class Interpreter {
 						}
 						key2 = key;
 						newJavaLine = indentation +"indexMirror = oldIndex.get(oldIndex.size()-1);\n" + indentation +
-								 "oldIndex.remove(oldIndex.size()-1);\n" + indentation +
-								 "}\n" + indentation +
-								 "oldmirrorList.remove(oldmirrorList.size() - 1);\n" + indentation +
-								 "mirrorList = oldmirrorList.get(oldmirrorList.size() - 1);\n";
+								"oldIndex.remove(oldIndex.size()-1);\n" + indentation +
+								"}\n" + indentation +
+								"oldmirrorList.remove(oldmirrorList.size() - 1);\n" + indentation +
+								"mirrorList = oldmirrorList.get(oldmirrorList.size() - 1);\n";
 						preventSELECT--;									// decrement to know if code is out of a mirror loop
 						patternFound = true;
 
@@ -358,12 +366,12 @@ public class Interpreter {
 						break;
 
 					}
-					 else if (key.startsWith("HIDE")) {
+					else if (key.startsWith("HIDE")) {
 						key2 = key;
-							newJavaLine = indentation + "currentPointer.hide();\n";
+						newJavaLine = indentation + "currentPointer.hide();\n";
 						patternFound = true;
 						break;
-					 }
+					}
 					else if (key.contains("SHOW")) {
 						key2 = key;
 						newJavaLine = indentation + "currentPointer.show();\n";
@@ -375,9 +383,10 @@ public class Interpreter {
 						if (!nullVariables.contains(matcher.group(1))) { 		// if the cursor has never been used, declare it
 							newJavaLine = indentation + "Pointer " + matcher.group(1) + " = new Pointer(gc);\n" +
 									indentation + "int " + matcher.group(1) + "Index = 0;\n" +
-                                    indentation + matcher.group(1) +".setSpeed(speedSlider);";
+									indentation + matcher.group(1) +".setSpeed(speedSlider);";
 						} else {												// if the cursor have already been used, but was "removed" and point on null, just assign it a new value
 							newJavaLine = indentation + matcher.group(1) + " = new Pointer(gc);\n" +
+									indentation + matcher.group(1) + ".setSpeed(speedSlider);" +
 									indentation + matcher.group(1) + "Index = 0;";
 							nullVariables.remove(matcher.group(1));
 						}

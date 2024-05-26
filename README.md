@@ -39,7 +39,7 @@ Our project work with maven, so you'll have to install it if you don't already h
 wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
 tar -xzvf apache-maven-3.9.6-bin.tar.gz
 rm apache-maven-3.9.6-bin.tar.gz
-mv apache-maven-3.9.6 /opt/apache-maven-3.9.6
+sudo mv apache-maven-3.9.6 /opt/apache-maven-3.9.6
 echo 'export PATH=/opt/apache-maven-3.9.6/bin:$PATH' >> ~/.bashrc
 bash
 ```
@@ -60,7 +60,7 @@ mvn clean install -f chromat_ynk/pom.xml javafx:run
 After the initial setup, you can start the app with the following command:
 
 ```bash
-mvn clean -f chromat_ynk/pom.xml javafx:run
+mvn -f chromat_ynk/pom.xml javafx:run
 ```
 
 ### Start just the drawing
@@ -68,8 +68,13 @@ mvn clean -f chromat_ynk/pom.xml javafx:run
 If you want to start only the drawing of the last script you made and not all the app you can use this command
 
 ```bash
-mvn clean -f plotter/pom.xml javafx:run
+mvn -f plotter/pom.xml javafx:run
 ```
+
+## output of the project
+
+By using the project you can export images. These images will be placed in the `drawing` directory under the name `Votre_dessin.png`.
+The txt files will be created in the `chromat_ynk\storage` directory
 
 # Information on the function available in the project
 

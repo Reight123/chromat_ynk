@@ -58,7 +58,6 @@ public class App extends Application {
 
         VBox vbox = new VBox(); //content of the main window
         vbox.setPadding(new Insets(40));
-        vbox.setPadding(new Insets(40));
         vbox.setSpacing(10);
         vbox.getStylesheets().add(("/style.css"));
         vbox.getStyleClass().add("root");
@@ -213,6 +212,7 @@ public class App extends Application {
             File file = new File("./storage/.currentFile.txt");
             executeFile(file);
         });
+
         Slider slider = new Slider(0, 100, 50);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);

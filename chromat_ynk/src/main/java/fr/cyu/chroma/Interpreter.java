@@ -36,6 +36,17 @@ public class Interpreter {
 		put("WHILE\\s+", new String[]{"while(", "){"});
 		put("MIRROR\\s+(.+)", new String[]{});
 		put("MIRROREND\\s*", new String[]{});
+		put("CIRCLED\\s+", new String[]{"currentPointer.drawCircle(",");"});
+		put("CIRCLEF\\s+", new String[]{"currentPointer.drawFillCircle(",");"});
+		put("CROSS\\s+", new String[]{"currentPointer.drawCross(",");"});
+		put("RECTANGLED\\s+", new String[]{"currentPointer.drawRectangle(",");"});
+		put("RECTANGLEF\\s+", new String[]{"currentPointer.drawFillRectangle(",");"});
+		put("SQUARED\\s+", new String[]{"currentPointer.drawSquare(",");"});
+		put("SQUAREF\\s+", new String[]{"currentPointer.drawFillSquare(",");"});
+		put("TRIANGLED\\s+", new String[]{"currentPointer.drawTriangle(",");"});
+		put("TRIANGLEF\\s+", new String[]{"currentPointer.drawFillTriangle(",");"});
+
+
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{}); // the FOR is peculiar and is handled separately, thus the empty String
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{});

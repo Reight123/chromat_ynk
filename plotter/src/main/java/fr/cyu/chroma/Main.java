@@ -171,34 +171,7 @@ public class Main extends Application {
 		int c1Index = 0;
 		c1.setSpeed(100.0);
 		 currentPointer = c1 ; 
-		tempMirrorPointer = new Pointer(gc);
-		symmetryPointer = new Pointer(gc);
-		tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
-		tempMirrorPointer.setDirection(currentPointer.getDirection());
-		symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());
-		symmetryPointer.setDirection(tempMirrorPointer.getDirection());
-		symmetryPointer.getPosMirror(10,10);
-		mirrorList.set(0,tempMirrorPointer);
-		mirrorList.set(1,symmetryPointer);
-		oldmirrorList.add(new ArrayList<>(mirrorList));
-		for(indexMirror = 0;  indexMirror <2; indexMirror++){
-			oldIndex.add(indexMirror);
-		orientation = 1;
-		currentPointer = mirrorList.get(indexMirror);
-		
-		
-		 currentPointer.fwd( 100 ); 
-		 currentPointer.turnLeft( 90 *orientation); 
-		 currentPointer.fwd( 100 ); 
-		
-		
-		
-		indexMirror = oldIndex.get(oldIndex.size()-1);
-		oldIndex.remove(oldIndex.size()-1);
-		}
-		oldmirrorList.remove(oldmirrorList.size() - 1);
-		mirrorList = oldmirrorList.get(oldmirrorList.size() - 1);
-
+		 currentPointer.drawTriangle( 500 ); 
 
         if (currentPointer != null) {
             return currentPointer;

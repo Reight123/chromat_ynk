@@ -213,8 +213,10 @@ public class Main extends Application {
 		orientation = (indexMirror == 0) ? 1 : -1;
 		currentPointer = mirrorList.get(indexMirror);
 		
+		 currentPointer.setThickness( 2 ); 
 		 currentPointer.fwd( 50 ); 
 		 currentPointer.turnLeft( 90 *orientation); 
+		 currentPointer.setThickness( 3 ); 
 		 currentPointer.fwd( 50 ); 
 		 currentPointer.turnLeft( 90 *orientation); 
 		 currentPointer.fwd( 50 ); 

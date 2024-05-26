@@ -17,7 +17,7 @@ public class Pointer {
     private double direction = 0.0;
     private boolean is_shown = true;
     private int opacity = 100;
-    private int thick = 5;
+    private double thick = 1;
     private int onAction = 0;
     private boolean animationEnCours = false;
     private Circle cursor;
@@ -31,7 +31,6 @@ public class Pointer {
     public Pointer(GraphicsContext gc) {
         this.gc = gc;
         this.cursor = new Circle(pos_x, pos_y, 5, currentColor);
-
     }
     public Circle getCursor() {
         return cursor;
@@ -57,7 +56,7 @@ public class Pointer {
         return opacity;
     }
 
-    public int getThick() {
+    public double getThick() {
         return thick;
     }
 
@@ -77,7 +76,10 @@ public class Pointer {
 
     public void setOpacity(int opacity) { this.opacity = opacity; }
 
-    public void setThickness(int thick) { this.thick = thick; }
+    public void setThickness(double thick) {
+        this.thick = thick;
+        //this.gc.setLineWidth(thick);
+    }
     public void setSpeed(double speedSlider) {
         switch ((int) speedSlider) {
             case 100:
@@ -109,6 +111,7 @@ public class Pointer {
      * @param direction
      */
     public void doodleTracker(double[] pointsX, double[] pointsY, double value, double direction) {
+        double thickness = this.thick;
         AnimationTimer timer = new AnimationTimer() {
             int count = 0;
             double deltaX = Math.cos(direction * Math.PI / 180);
@@ -126,7 +129,7 @@ public class Pointer {
                     pointsY[1] += deltaY;
                 }
                 gc.setStroke(currentColor); //Use of currentColor to define the color of the stroke
-                gc.setLineWidth(2);
+                gc.setLineWidth(thickness);
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
 
                 try {
@@ -221,6 +224,9 @@ public class Pointer {
      */
     public void lookat(double x, double y){
         direction = Math.toDegrees(Math.atan2(y - pos_y, x - pos_x));
+    }
+    public void lookat(Pointer target){
+        direction = Math.toDegrees(Math.atan2(target.pos_y - pos_y, target.pos_x - pos_x));
     }
 
     /**

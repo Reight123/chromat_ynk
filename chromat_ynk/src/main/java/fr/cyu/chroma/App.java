@@ -36,7 +36,7 @@ public class App extends Application {
     private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "BLOCKEND", "MIMICEND", "MIRROREND", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MATH", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE", "CIRCLED", "CIRCLEF", "CROSS", "RECTANGLED", "RECTANGLEF", "SQUARED", "SQUAREF", "TRIANGLED", "TRIANGLEF");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
-    double sliderValue = 100;
+    private double sliderValue = 100;
     private boolean errorGestion = false;
 
 
@@ -104,6 +104,8 @@ public class App extends Application {
         primaryStage.setScene(scene); // put the content into the stage
         primaryStage.show(); //show the content
     }
+
+
 
     /**
      * this function will show all the new errors in the box made for
@@ -217,7 +219,7 @@ public class App extends Application {
         slider.setBlockIncrement(10);
         slider.getStyleClass().add("slider");
         slider.setOnMouseReleased(event -> {                    //this slider let the user choose the drawing's speed
-            sliderValue = slider.getValue();
+            setSliderValue(slider.getValue());
         });
 
         ToggleButton  selecterror= new ToggleButton("Arret si Erreur");
@@ -277,7 +279,7 @@ public class App extends Application {
             File file = new File("./storage/" + fileName + ".txt");     //create the .txt fill in the absolute path
             FileWriter fileWriter = new FileWriter(file);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
+            bufferedWriter.write("SPEED " + sliderValue + "\n");    // Add this line to write the slider value
             for (int i = 0; i < choiceBoxes.size(); i++) {              //write in the fill all the command
                 String selectedOption = choiceBoxes.get(i).getValue();
                 String enteredValue = valueFields.get(i).getText();
@@ -502,7 +504,12 @@ public class App extends Application {
             System.out.println("Error while executing file: " + e.getMessage());
         }
     }
-
+    public void setSliderValue(double value){
+        sliderValue = value;
+    }
+    public double getSliderValue(){
+        return sliderValue;
+    }
 
     public static void main(String[] args) {
         launch(args);

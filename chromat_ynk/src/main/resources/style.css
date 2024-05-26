@@ -69,7 +69,7 @@
 }
 
 .choice { /*command button*/
-    -fx-min-width: 170px;
+    -fx-min-width: 180px;
     -fx-min-height: 50px;
     -fx-background-color: #ffc2c2;
     -fx-border: solid ;

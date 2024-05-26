@@ -169,7 +169,7 @@ public class Main extends Application {
         Pointer symmetryPointer = null;
         Pointer targetStart;
         int k=0,indexMirror=0,orientation=1;
-        double speedSlider = 50;
+        double speedSlider = 100;
         temp.add(tempPointer);
         target.add(targetPointer);
         mirrorList.add(tempMirrorPointer);

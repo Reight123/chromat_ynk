@@ -1,3 +1,4 @@
+SPEED 100
 CURSOR cursor1
 SELECT cursor1
 TURNL 40

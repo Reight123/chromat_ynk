@@ -12,7 +12,7 @@ public class Interpreter {
 	private final Map<String, String[]> keywords = new HashMap<>() {{		// create a map, with a regex expression to find keywords and isolate what is before and after, and the associated template
 		put("CURSOR\\s+([a-zA-Z_]\\w*)\\s*", new String[]{});				// separate the template in several parts, to put the inputs afterward
 		put("SELECT\\s+", new String[]{"currentPointer =", ";"});			// for commands that apply to the previously selected pointer, apply the change to the currentPointer instance
-		put("SPEED\\s+", new String[]{" speedSlider = ", ";"});
+		put("SPEED\\s+", new String[]{" speedSlider = ", ";"});				// speed of the drawing,in [0;100]
 		put("REMOVE\\s+", new String[]{"", " = null;"});
 		put("FWD\\s+", new String[]{"currentPointer.fwd(", ");"});
 		put("BWD\\s+", new String[]{"currentPointer.bwd(", ");"});

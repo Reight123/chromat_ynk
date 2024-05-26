@@ -76,10 +76,7 @@ public class Pointer {
 
     public void setOpacity(int opacity) { this.opacity = opacity; }
 
-    public void setThickness(double thick) {
-        this.thick = thick;
-        //this.gc.setLineWidth(thick);
-    }
+    public void setThickness(double thick) { this.thick = thick; }
     public void setSpeed(double speedSlider) {
         switch ((int) speedSlider) {
             case 100:

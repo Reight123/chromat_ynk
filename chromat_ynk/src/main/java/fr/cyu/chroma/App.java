@@ -126,6 +126,23 @@ public class App extends Application {
     }
 
 
+    /**
+     * Sets the value of the slider.
+     *
+     * @param value The new value to set for the slider.
+     */
+    public void setSliderValue(double value){
+        sliderValue = value;
+    }
+
+    /**
+     * Gets the value of the slider.
+     */
+    public double getSliderValue(){
+        return sliderValue;
+    }
+
+
 
     /**
      * this function will show all the new errors in the box made for
@@ -231,7 +248,7 @@ public class App extends Application {
             executeFile(file);
         });
 
-        Slider slider = new Slider(0, 100, 50);
+        Slider slider = new Slider(0, 100, 100);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.setMajorTickUnit(25);
@@ -523,12 +540,6 @@ public class App extends Application {
             updateMessageBox(observableArrayList("Error while executing file: " + e.getMessage()), messageBox);
             System.out.println("Error while executing file: " + e.getMessage());
         }
-    }
-    public void setSliderValue(double value){
-        sliderValue = value;
-    }
-    public double getSliderValue(){
-        return sliderValue;
     }
 
     public static void main(String[] args) {

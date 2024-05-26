@@ -296,7 +296,11 @@ public class App extends Application {
                       else if (selectedOption.equals("MIRROREND")) {     //this one also close a loop but need to be written
                         bufferedWriter.write("}\n");
                         bufferedWriter.write(selectedOption + " " + enteredValue +"\n");
-                    } else if (!enteredValue.isEmpty()) {               //all the others commands
+                    }
+                      else if (selectedOption.equals("HIDE") || selectedOption.equals("SHOW")) {     //this one also close a loop but need to be written
+                        bufferedWriter.write(selectedOption + "\n");
+                    }
+                      else if (!enteredValue.isEmpty()) {               //all the others commands
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                     }
                 }

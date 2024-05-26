@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import static javafx.collections.FXCollections.observableArrayList;
 
 public class Main extends Application {
@@ -48,24 +49,33 @@ public class Main extends Application {
 
         VBox vbox = new VBox();
         vbox.getStylesheets().add(("/style.css"));
-        vbox.getChildren().add(canvas);
 
-        Scene scene = new Scene(vbox, 800, 870);
+        Pane pane = new Pane();
+        pane.getChildren().addAll(canvas,currentPointer.getCursor());
+        BorderPane borderPane = new BorderPane();
+        borderPane.setCenter(pane);
+        borderPane.setBottom(vbox);
+
+        Scene scene = new Scene(borderPane, 800, 870);
 
         updatePointer = commands(gc);
         System.out.println(currentPointer);
 
-        //Scene scene = new Scene(root, 800, 850);
-        TranslateTransition transition = new TranslateTransition(Duration.millis(3000), currentPointer.getCursor());
-        transition.setFromX(0);
-        transition.setFromY(0);
-        transition.setToX(updatePointer.getPos_x()-400);
-        transition.setToY(updatePointer.getPos_y()-400);
-        transition.play();
+        if(updatePointer.isIs_shown() == true) {
+            TranslateTransition transition = new TranslateTransition(Duration.millis(3000), currentPointer.getCursor());
+            transition.setFromX(0);
+            transition.setFromY(0);
+            transition.setToX(updatePointer.getPos_x() - 400);
+            transition.setToY(updatePointer.getPos_y() - 400);
+            transition.play();
+        }
+        else{
+            pane.getChildren().remove(currentPointer.getCursor());
+        }
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        commands(gc);
+        //commands(gc);
 
         addButtons(vbox);
         // TODO add a button to begin the drawing, and another to delete the drawing and draw it again

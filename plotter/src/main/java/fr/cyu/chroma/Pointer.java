@@ -282,10 +282,31 @@ public class Pointer {
         this.currentColor = color;
     }
 
+    /**
+     * Calculates the distance between the current position and another position represented by a Pointer.
+     *
+     * @param other The other Pointer.
+     * @return The distance between the current position and the position of the other Pointer.
+     */
     public double distance(Pointer other) { return Math.sqrt(Math.pow(pos_x - other.pos_x, 2) + Math.pow(pos_y - other.pos_y, 2)); }
 
+    /**
+     * Calculates the distance between the current position and a specified point.
+     *
+     * @param x The x-coordinate of the point.
+     * @param y The y-coordinate of the point.
+     * @return The distance between the current position and the point.
+     */
     public double distance(double x, double y) { return Math.sqrt(Math.pow(pos_x - x, 2) + Math.pow(pos_y - y, 2)); }
 
+
+    /**
+     * Calculates the mirrored position of the current position with respect to a point.
+     * Central symmetry
+     *
+     * @param x The x-coordinate of the mirror point.
+     * @param y The y-coordinate of the mirror point.
+     */
     public void getPosMirror(double x, double y){
         double d = 0, angle = this.direction;
         Pointer p = new Pointer(gc);
@@ -298,6 +319,15 @@ public class Pointer {
         setDirection(angle+180);
     }
 
+    /**
+     * Calculates the mirrored position of the current position with respect to a line defined by two points.
+     * Axial symmetry
+     *
+     * @param x1 The x of the first point
+     * @param y1 The y of the first point
+     * @param x2 The x of the second point
+     * @param y2 The y of the second point
+     */
     public void getPosMirror(double x1, double y1, double x2, double y2){
         Pointer p1 = new Pointer(gc);
         Pointer p2 = new Pointer(gc);
@@ -352,6 +382,11 @@ public class Pointer {
 
     }
 
+    /**
+     * Draws a cross shape with the specified side length.
+     *
+     * @param side The length of each arm of the cross.
+     */
     public void drawCross(double side){
         side = side/2;
         Pointer p1 = new Pointer(gc);
@@ -375,6 +410,12 @@ public class Pointer {
         p1.fwd(side);
         p2.fwd(side);
     }
+
+    /**
+     * Draws an outlined square with a specified side length.
+     *
+     * @param side The length of each side of the square.
+     */
     public void drawSquare(double side){
         double centretovertex = ( side * Math.sqrt(2) )/2;
         Pointer p1 = new Pointer(gc);
@@ -390,6 +431,12 @@ public class Pointer {
             p1.fwd(side);
         }
     }
+
+    /**
+     * Draws a filled square with a specified side length.
+     *
+     * @param side The length of each side of the square.
+     */
     public void drawFillSquare(double side){
         double centretovertex = ( side * Math.sqrt(2) )/2;
         Pointer p1 = new Pointer(gc);
@@ -401,6 +448,13 @@ public class Pointer {
         gc.setFill(currentColor);
         gc.fillRect(p1.pos_x, p1.pos_y, side, side);
     }
+
+    /**
+     * Draws an outlined rectangle with specified width and height.
+     *
+     * @param width The width of the rectangle.
+     * @param height The height of the rectangle.
+     */
     public void drawRectangle(double width, double height) {
         double centretovertex = Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2));
         Pointer p1 = new Pointer(gc);
@@ -416,6 +470,13 @@ public class Pointer {
             p1.turnLeft(90);
         }
     }
+
+    /**
+     * Draws a filled rectangle with specified width and height.
+     *
+     * @param width The width of the rectangle.
+     * @param height The height of the rectangle.
+     */
     public void drawFillRectangle(double width, double height){
         double centretovertex = Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2));
         Pointer p1 = new Pointer(gc);
@@ -424,6 +485,11 @@ public class Pointer {
         gc.fillRect(p1.pos_x, p1.pos_y, width, height);
     }
 
+    /**
+     * Draws an outlined equilateral triangle with a specified side length.
+     *
+     * @param side The length of each side of the triangle.
+     */
     public void drawTriangle(double side){
         double centretovertex = (side * Math.sqrt(3)) / 3;
         Pointer p1 = new Pointer(gc);
@@ -436,6 +502,11 @@ public class Pointer {
         p1.fwd(side);
     }
 
+    /**
+     * Draws a filled equilateral triangle with a specified side length.
+     *
+     * @param side The length of each side of the triangle.
+     */
     public void drawFillTriangle(double side) {
         double centretovertex = (side * Math.sqrt(3)) / 3;
         double[] xPoints = new double[3];
@@ -463,6 +534,11 @@ public class Pointer {
         gc.fillPolygon(xPoints, yPoints, 3);
     }
 
+    /**
+     * Draws an outlined circle with a specified radius.
+     *
+     * @param radius The radius of the circle to be drawn.
+     */
     public void drawCircle(double radius) {
         Pointer p1 = new Pointer(gc);
         Pointer p2 = new Pointer(gc);
@@ -475,6 +551,12 @@ public class Pointer {
             p2.turnRight(360 / numIterations);
         }
     }
+
+    /**
+     * Draws a filled circle with a specified radius.
+     *
+     * @param radius The radius of the circle to be drawn.
+     */
     public void drawFillCircle(double radius) {
         gc.setFill(currentColor);
         gc.fillOval(pos_x - radius, pos_y - radius, 2 * radius, 2 * radius);

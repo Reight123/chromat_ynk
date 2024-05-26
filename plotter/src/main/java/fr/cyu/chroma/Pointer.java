@@ -17,7 +17,7 @@ public class Pointer {
     private double direction = 0.0;
     private boolean is_shown = true;
     private int opacity = 100;
-    private int thick = 5;
+    private double thick = 1;
     private int onAction = 0;
     private boolean animationEnCours = false;
     private Circle cursor;
@@ -31,7 +31,6 @@ public class Pointer {
     public Pointer(GraphicsContext gc) {
         this.gc = gc;
         this.cursor = new Circle(pos_x, pos_y, 5, currentColor);
-
     }
     public Circle getCursor() {
         return cursor;
@@ -57,7 +56,7 @@ public class Pointer {
         return opacity;
     }
 
-    public int getThick() {
+    public double getThick() {
         return thick;
     }
 
@@ -77,7 +76,7 @@ public class Pointer {
 
     public void setOpacity(int opacity) { this.opacity = opacity; }
 
-    public void setThickness(int thick) { this.thick = thick; }
+    public void setThickness(double thick) { this.thick = thick; }
     public void setSpeed(double speedSlider) {
         switch ((int) speedSlider) {
             case 100:
@@ -109,6 +108,7 @@ public class Pointer {
      * @param direction
      */
     public void doodleTracker(double[] pointsX, double[] pointsY, double value, double direction) {
+        double thickness = this.thick;
         AnimationTimer timer = new AnimationTimer() {
             int count = 0;
             double deltaX = Math.cos(direction * Math.PI / 180);
@@ -126,7 +126,7 @@ public class Pointer {
                     pointsY[1] += deltaY;
                 }
                 gc.setStroke(currentColor); //Use of currentColor to define the color of the stroke
-                gc.setLineWidth(2);
+                gc.setLineWidth(thickness);
                 gc.strokeLine(pointsX[0], pointsY[0], pointsX[1], pointsY[1]);
 
                 try {
@@ -222,6 +222,9 @@ public class Pointer {
     public void lookat(double x, double y){
         direction = Math.toDegrees(Math.atan2(y - pos_y, x - pos_x));
     }
+    public void lookat(Pointer target){
+        direction = Math.toDegrees(Math.atan2(target.pos_y - pos_y, target.pos_x - pos_x));
+    }
 
     /**
      * hide the cursor
@@ -284,10 +287,10 @@ public class Pointer {
         this.currentColor = color;
     }
 
-    public double distance(Pointer other)
-    {
-        return Math.sqrt(Math.pow(pos_x - other.pos_x, 2) + Math.pow(pos_y - other.pos_y, 2));
-    }
+    public double distance(Pointer other) { return Math.sqrt(Math.pow(pos_x - other.pos_x, 2) + Math.pow(pos_y - other.pos_y, 2)); }
+
+    public double distance(double x, double y) { return Math.sqrt(Math.pow(pos_x - x, 2) + Math.pow(pos_y - y, 2)); }
+
     public void getPosMirror(double x, double y){
         double d = 0, angle = this.direction;
         Pointer p = new Pointer(gc);
@@ -353,4 +356,133 @@ public class Pointer {
         }
 
     }
+
+    public void drawCross(double side){
+        side = side/2;
+        Pointer p1 = new Pointer(gc);
+        Pointer p2 = new Pointer(gc);
+        p1.pos(pos_x,pos_y);
+        p2.pos(pos_x,pos_y);
+        p1.setDirection(-135);
+        p1.setDirection(45);
+
+        p1.setPos_x( pos_x + side * Math.cos(this.direction * Math.PI / 180));
+        p1.setPos_y( pos_y + side * Math.sin(this.direction * Math.PI / 180));
+        p2.setPos_x( pos_x + (-side) * Math.cos(this.direction * Math.PI / 180));
+        p2.setPos_y( pos_y + (-side) * Math.sin(this.direction * Math.PI / 180));
+
+        p1.setDirection(0);
+        p1.setDirection(180);
+        p1.fwd(side);
+        p2.fwd(side);
+        p1.turnLeft(90);
+        p2.turnLeft(90);
+        p1.fwd(side);
+        p2.fwd(side);
+    }
+    public void drawSquare(double side){
+        double centretovertex = ( side * Math.sqrt(2) )/2;
+        Pointer p1 = new Pointer(gc);
+        p1.pos(pos_x,pos_y);
+        p1.setDirection(135);
+
+        p1.setPos_x( pos_x + (centretovertex) * Math.cos(p1.direction * Math.PI / 180));
+        p1.setPos_y( pos_y + (centretovertex) * Math.sin(p1.direction * Math.PI / 180));
+        p1.setDirection(0);
+        p1.fwd(side);
+        for(int i = 0 ; i < 3;i++){
+            p1.turnLeft(90);
+            p1.fwd(side);
+        }
+    }
+    public void drawFillSquare(double side){
+        double centretovertex = ( side * Math.sqrt(2) )/2;
+        Pointer p1 = new Pointer(gc);
+        p1.pos(pos_x,pos_y);
+        p1.setDirection(-135);
+
+        p1.setPos_x( pos_x + (centretovertex) * Math.cos(p1.direction * Math.PI / 180));
+        p1.setPos_y( pos_y + (centretovertex) * Math.sin(p1.direction * Math.PI / 180));
+        gc.setFill(currentColor);
+        gc.fillRect(p1.pos_x, p1.pos_y, side, side);
+    }
+    public void drawRectangle(double width, double height) {
+        double centretovertex = Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2));
+        Pointer p1 = new Pointer(gc);
+        p1.pos(pos_x - (width/2), pos_y + (height/2) );
+       // p1.setDirection(135);
+       // p1.setPos_x( pos_x + (centretovertex/2) * Math.cos(p1.direction * Math.PI / 180));
+        //p1.setPos_y( pos_y + (centretovertex/2) * Math.sin(p1.direction * Math.PI / 180));
+       // p1.setDirection(0);
+        for(int i =0 ; i < 2 ; i++){
+            p1.fwd(width);
+            p1.turnLeft(90);
+            p1.fwd(height);
+            p1.turnLeft(90);
+        }
+    }
+    public void drawFillRectangle(double width, double height){
+        double centretovertex = Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2));
+        Pointer p1 = new Pointer(gc);
+        p1.pos(pos_x - (width/2), pos_y - (height/2) );
+        gc.setFill(currentColor);
+        gc.fillRect(p1.pos_x, p1.pos_y, width, height);
+    }
+
+    public void drawTriangle(double side){
+        double centretovertex = (side * Math.sqrt(3)) / 3;
+        Pointer p1 = new Pointer(gc);
+        p1.pos(pos_x,pos_y - centretovertex);
+        p1.turnRight(60);
+        p1.fwd(side);
+        p1.turnRight(120);
+        p1.fwd(side);
+        p1.turnRight(120);
+        p1.fwd(side);
+    }
+
+    public void drawFillTriangle(double side) {
+        double centretovertex = (side * Math.sqrt(3)) / 3;
+        double[] xPoints = new double[3];
+        double[] yPoints = new double[3];
+        Pointer p1 = new Pointer(gc);
+        p1.pos(pos_x,pos_y - centretovertex);
+
+        xPoints[0] = p1.pos_x;
+        yPoints[0] = p1.pos_y;
+        p1.turnRight(60);
+        p1.setPos_x( p1.pos_x + side * Math.cos(p1.direction * Math.PI / 180));
+        p1.setPos_y( p1.pos_y + side * Math.sin(p1.direction * Math.PI / 180));
+
+        xPoints[1] = p1.pos_x;
+        yPoints[1] = p1.pos_y;
+
+        p1.turnRight(120);
+        p1.setPos_x( p1.pos_x + side * Math.cos(p1.direction * Math.PI / 180));
+        p1.setPos_y( p1.pos_y + side * Math.sin(p1.direction * Math.PI / 180));
+
+        xPoints[2] = p1.pos_x;
+        yPoints[2] = p1.pos_y;
+
+        gc.setFill(currentColor);
+        gc.fillPolygon(xPoints, yPoints, 3);
+    }
+
+    public void drawCircle(double radius) {
+        Pointer p1 = new Pointer(gc);
+        Pointer p2 = new Pointer(gc);
+        p1.pos(pos_x,pos_y-radius);
+        p2.pos(pos_x,pos_y+radius);
+        double numIterations = 2*Math.PI *radius;
+
+        for (int j = 0; j < numIterations; j++) {
+            p2.bwd(1);
+            p2.turnRight(360 / numIterations);
+        }
+    }
+    public void drawFillCircle(double radius) {
+        gc.setFill(currentColor);
+        gc.fillOval(pos_x - radius, pos_y - radius, 2 * radius, 2 * radius);
+    }
+
 }

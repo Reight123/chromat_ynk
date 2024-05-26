@@ -33,7 +33,7 @@ public class App extends Application {
     private final ObservableList<TextField> valueFields = observableArrayList();
     private final ObservableList<Button> addButtons = observableArrayList();
     private final ObservableList<Button> deleteButtons = observableArrayList();
-    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "BLOCKEND", "MIMICEND", "MIRROREND", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MATH", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE");
+    private final ObservableList<String> choices = observableArrayList( "BOOL", "BWD", "NUM", "STR", "CURSOR", "SELECT", "COLOR", "DEL", "BLOCKEND", "MIMICEND", "MIRROREND", "FOR", "FWD", "HIDE", "IF", "LOOKAT", "MATH", "MIMIC", "MIRROR", "MOV", "POS", "PRESS", "REMOVE", "SHOW", "THICK", "TURNL", "TURNR", "WHILE", "CIRCLED", "CIRCLEF", "CROSS", "RECTANGLED", "RECTANGLEF", "SQUARED", "SQUAREF", "TRIANGLED", "TRIANGLEF");
     private final ObservableList<String> error = observableArrayList();
     private VBox messageBox = new VBox();
     double sliderValue = 100;
@@ -294,7 +294,11 @@ public class App extends Application {
                       else if (selectedOption.equals("MIRROREND")) {     //this one also close a loop but need to be written
                         bufferedWriter.write("}\n");
                         bufferedWriter.write(selectedOption + " " + enteredValue +"\n");
-                    } else if (!enteredValue.isEmpty()) {               //all the others commands
+                    }
+                      else if (selectedOption.equals("HIDE") || selectedOption.equals("SHOW")) {     //this one also close a loop but need to be written
+                        bufferedWriter.write(selectedOption + "\n");
+                    }
+                      else if (!enteredValue.isEmpty()) {               //all the others commands
                         bufferedWriter.write(selectedOption + " " + enteredValue + "\n");
                     }
                 }

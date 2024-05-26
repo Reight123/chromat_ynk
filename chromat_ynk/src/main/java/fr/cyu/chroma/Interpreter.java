@@ -20,8 +20,8 @@ public class Interpreter {
 		put("TURNL\\s+", new String[]{"currentPointer.turnLeft(", "*orientation);"});
 		put("MOV\\s+", new String[]{"currentPointer.move(", ");"});
 		put("POS\\s+", new String[]{"currentPointer.pos(", ");"});
-		put("HIDE\\s+", new String[]{"currentPointer.hide();",""});
-		put("SHOW\\s+", new String[]{"currentPointer.show();",""});
+		put("HIDE\\s*", new String[]{});
+		put("SHOW\\s*", new String[]{});
 		put("PRESS\\s+", new String[]{"currentPointer.setOpacity(",");"});
 		put("THICK\\s+", new String[]{"currentPointer.setThickness(",");"});
 		put("COLOR\\s+", new String[]{"currentPointer.setColor(", ");"});
@@ -36,6 +36,17 @@ public class Interpreter {
 		put("WHILE\\s+", new String[]{"while(", "){"});
 		put("MIRROR\\s+(.+)", new String[]{});
 		put("MIRROREND\\s*", new String[]{});
+		put("CIRCLED\\s+", new String[]{"currentPointer.drawCircle(",");"});
+		put("CIRCLEF\\s+", new String[]{"currentPointer.drawFillCircle(",");"});
+		put("CROSS\\s+", new String[]{"currentPointer.drawCross(",");"});
+		put("RECTANGLED\\s+", new String[]{"currentPointer.drawRectangle(",");"});
+		put("RECTANGLEF\\s+", new String[]{"currentPointer.drawFillRectangle(",");"});
+		put("SQUARED\\s+", new String[]{"currentPointer.drawSquare(",");"});
+		put("SQUAREF\\s+", new String[]{"currentPointer.drawFillSquare(",");"});
+		put("TRIANGLED\\s+", new String[]{"currentPointer.drawTriangle(",");"});
+		put("TRIANGLEF\\s+", new String[]{"currentPointer.drawFillTriangle(",");"});
+
+
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{}); // the FOR is peculiar and is handled separately, thus the empty String
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+FROM\\s+(-?\\w+)\\s+TO\\s+(-?\\w+)", new String[]{});
 		put("FOR\\s+([a-zA-Z_]\\w*)\\s+TO\\s+(-?\\w+)\\s+STEP\\s+(-?\\w+)", new String[]{});
@@ -105,7 +116,7 @@ public class Interpreter {
 				if (matcher.find()) {
 
 																			// loop if is for all cases except FOR MIMIC ENDMIMIC MIRROR and CURSOR
-					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR") && !key.contains("MIRROR")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
+					if (!key.contains("FOR")  && !key.startsWith("MIMIC") && !key.contains("CURSOR") && !key.contains("MIRROR") && !key.contains("HIDE") && !key.contains("SHOW")) {     // the FOR and MIMIC syntax are peculiar and must be handled separately
 						if (key.contains("WHILE")){
 							functionPile.add("WHILE");
 							if (ignoreError){
@@ -341,7 +352,20 @@ public class Interpreter {
 						}
 						break;
 
-					} else if (key.contains("CURSOR")) { // case of the CURSOR command
+					}
+					 else if (key.startsWith("HIDE")) {
+						key2 = key;
+							newJavaLine = indentation + "currentPointer.hide();\n";
+						patternFound = true;
+						break;
+					 }
+					else if (key.contains("SHOW")) {
+						key2 = key;
+						newJavaLine = indentation + "currentPointer.show();\n";
+						patternFound = true;
+						break;
+					}
+					else if (key.contains("CURSOR")) { // case of the CURSOR command
 						key2 = key;
 						if (!nullVariables.contains(matcher.group(1))) { 		// if the cursor has never been used, declare it
 							newJavaLine = indentation + "Pointer " + matcher.group(1) + " = new Pointer(gc);\n" +

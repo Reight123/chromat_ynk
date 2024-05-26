@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import static javafx.collections.FXCollections.observableArrayList;
 
 public class Main extends Application {
@@ -48,24 +49,33 @@ public class Main extends Application {
 
         VBox vbox = new VBox();
         vbox.getStylesheets().add(("/style.css"));
-        vbox.getChildren().add(canvas);
 
-        Scene scene = new Scene(vbox, 800, 870);
+        Pane pane = new Pane();
+        pane.getChildren().addAll(canvas,currentPointer.getCursor());
+        BorderPane borderPane = new BorderPane();
+        borderPane.setCenter(pane);
+        borderPane.setBottom(vbox);
+
+        Scene scene = new Scene(borderPane, 800, 870);
 
         updatePointer = commands(gc);
         System.out.println(currentPointer);
 
-        //Scene scene = new Scene(root, 800, 850);
-        TranslateTransition transition = new TranslateTransition(Duration.millis(3000), currentPointer.getCursor());
-        transition.setFromX(0);
-        transition.setFromY(0);
-        transition.setToX(updatePointer.getPos_x()-400);
-        transition.setToY(updatePointer.getPos_y()-400);
-        transition.play();
+        if(updatePointer.isIs_shown() == true) {
+            TranslateTransition transition = new TranslateTransition(Duration.millis(3000), currentPointer.getCursor());
+            transition.setFromX(0);
+            transition.setFromY(0);
+            transition.setToX(updatePointer.getPos_x() - 400);
+            transition.setToY(updatePointer.getPos_y() - 400);
+            transition.play();
+        }
+        else{
+            pane.getChildren().remove(currentPointer.getCursor());
+        }
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        commands(gc);
+        //commands(gc);
 
         addButtons(vbox);
         // TODO add a button to begin the drawing, and another to delete the drawing and draw it again
@@ -171,25 +181,54 @@ public class Main extends Application {
 		int c1Index = 0;
 		c1.setSpeed(100.0);
 		 currentPointer = c1 ; 
+		 currentPointer.pos( 300,400 ); 
 		tempMirrorPointer = new Pointer(gc);
 		symmetryPointer = new Pointer(gc);
 		tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
 		tempMirrorPointer.setDirection(currentPointer.getDirection());
 		symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());
 		symmetryPointer.setDirection(tempMirrorPointer.getDirection());
-		symmetryPointer.getPosMirror(10,10);
+		symmetryPointer.getPosMirror(320,300,420,300);
 		mirrorList.set(0,tempMirrorPointer);
 		mirrorList.set(1,symmetryPointer);
 		oldmirrorList.add(new ArrayList<>(mirrorList));
 		for(indexMirror = 0;  indexMirror <2; indexMirror++){
 			oldIndex.add(indexMirror);
-		orientation = 1;
+		orientation = (indexMirror == 0) ? 1 : -1;
 		currentPointer = mirrorList.get(indexMirror);
 		
 		
-		 currentPointer.fwd( 100 ); 
+		tempMirrorPointer = new Pointer(gc);
+		symmetryPointer = new Pointer(gc);
+		tempMirrorPointer.pos(currentPointer.getPos_x(),currentPointer.getPos_y());
+		tempMirrorPointer.setDirection(currentPointer.getDirection());
+		symmetryPointer.pos(tempMirrorPointer.getPos_x(),tempMirrorPointer.getPos_y());
+		symmetryPointer.setDirection(tempMirrorPointer.getDirection());
+		symmetryPointer.getPosMirror(420,500,420,300);
+		mirrorList.set(0,tempMirrorPointer);
+		mirrorList.set(1,symmetryPointer);
+		oldmirrorList.add(new ArrayList<>(mirrorList));
+		for(indexMirror = 0;  indexMirror <2; indexMirror++){
+			oldIndex.add(indexMirror);
+		orientation = (indexMirror == 0) ? 1 : -1;
+		currentPointer = mirrorList.get(indexMirror);
+		
+		 currentPointer.setThickness( 2 ); 
+		 currentPointer.fwd( 50 ); 
 		 currentPointer.turnLeft( 90 *orientation); 
-		 currentPointer.fwd( 100 ); 
+		 currentPointer.setThickness( 3 ); 
+		 currentPointer.fwd( 50 ); 
+		 currentPointer.turnLeft( 90 *orientation); 
+		 currentPointer.fwd( 50 ); 
+		
+		
+		
+		indexMirror = oldIndex.get(oldIndex.size()-1);
+		oldIndex.remove(oldIndex.size()-1);
+		}
+		oldmirrorList.remove(oldmirrorList.size() - 1);
+		mirrorList = oldmirrorList.get(oldmirrorList.size() - 1);
+
 		
 		
 		

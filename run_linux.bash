@@ -4,7 +4,7 @@
 if command -v mvn &> /dev/null; then
     if mvn -v &> /dev/null; then
         if [ -f "chromat_ynk/pom.xml" ]; then
-            mvn -f chromat_ynk/pom.xml clean javafx:run
+            mvn -f chromat_ynk/pom.xml clean install javafx:run
         else
             echo "Error : chromat_ynk/pom.xml file not found."
             read -p "Press Enter to exit"

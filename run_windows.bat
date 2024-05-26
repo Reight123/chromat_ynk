@@ -9,7 +9,7 @@ if "%MAVEN_HOME%"=="" (
         echo "Error : chromat_ynk\pom.xml file not found"
         pause
     ) else (
-        mvn -f chromat_ynk\pom.xml javafx:run
+        mvn clean install -f chromat_ynk\pom.xml javafx:run
     )
 )
 
